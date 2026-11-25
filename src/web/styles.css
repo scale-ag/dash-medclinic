@@ -1295,3 +1295,86 @@ table.tree th.tree-name {
     margin-left: 0;
   }
 }
+
+
+/* Comparação diária e hierarquia da agência Scale. */
+:root {
+  --entity-0:#5b7bf0;--entity-1:#22c55e;--entity-2:#f59e0b;--entity-3:#f87171;--entity-4:#a78bfa;
+  --entity-5:#06b6d4;--entity-6:#ec4899;--entity-7:#84cc16;--entity-8:#fb923c;--entity-9:#38bdf8;
+}
+.period-panel {
+  position:fixed;inset:auto;margin:0;border:1px solid var(--border);border-radius:12px;background:var(--surface);
+  color:var(--ink);padding:12px;box-shadow:0 12px 36px #0004;width:min(600px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;
+}
+.period-panel:popover-open {display:grid;grid-template-columns:126px minmax(0,1fr);gap:12px}
+.period-shortcuts {display:flex;flex-direction:column;border-right:1px solid var(--border);padding-right:8px;}
+.period-panel button:not(.btn) {border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;border-radius:5px}
+.period-shortcuts button {text-align:left;padding:5px 8px;font-size:12px!important}
+.period-panel button:not(:disabled):hover,.period-shortcuts .current {background:var(--accent-light)!important;color:var(--accent)!important}
+.calendars {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.calendar {font-size:12px}.calendar strong {font-size:13px}
+.calendar-side input {width:100%;font:inherit;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink);padding:4px;margin-top:6px}
+.month-nav {display:flex;align-items:center;justify-content:space-between;margin:8px 0}
+.month-nav button {font-size:20px!important;line-height:1;width:24px}
+.calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center;gap:1px}
+.calendar-grid > * {min-width:0;padding:4px 0;font-size:12px!important}
+.weekday,.period-panel button:disabled{opacity:.48}
+.calendar-grid .chosen {background:var(--accent)!important;color:white!important}
+.calendar-grid .in-range {background:var(--accent-light)!important}
+.period-actions {display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.period-trigger {font-variant-numeric:tabular-nums}
+.table-chart-pair,.rank-card {background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:0}
+.table-chart-pair {margin-top:16px}
+.thead-title,.rank-card h3 {margin:0;padding:12px 15px 9px;font-weight:600;font-size:14px}
+.table-chart-pair .tbl-wrap {max-height:250px}
+.table-chart-pair[data-level=ad] .tbl-wrap {max-height:420px}
+.table-chart-pair table.dt {width:max-content;min-width:100%}
+.table-chart-pair table.dt tr > :first-child {
+  box-sizing:border-box;width:var(--dim-width);min-width:var(--dim-width);max-width:var(--dim-width);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.table-chart-pair table.dt thead th {position:sticky}
+.resize-column {position:absolute;inset:0 0 0 auto;width:8px;cursor:col-resize;touch-action:none;border-right:1px solid var(--border)}
+.table-chart-pair tbody tr,.rank-row {cursor:pointer}
+.table-chart-pair tbody tr.entity-selected > * {background:var(--accent-light)!important;color:var(--accent)}
+@media(min-width:1000px) {
+  .table-chart-pair th:first-child,.table-chart-pair td:nth-child(2),.table-chart-pair th:nth-child(2) {position:sticky;left:0;background:var(--surface);z-index:1}
+  .table-chart-pair td:nth-child(2),.table-chart-pair th:nth-child(2) {left:var(--dim-width)}
+  .table-chart-pair table.dt thead th:is(:first-child,:nth-child(2)) {z-index:4;background:var(--thead)}
+  .table-chart-pair table.dt tfoot :is(th,td) {z-index:3;background:var(--tfoot)}
+}
+.pair-chart {padding:12px 14px 10px;border-top:1px solid var(--border)}
+.pc-title,.entity-legend {font-size:11px;color:var(--muted)}
+.pc-title {text-transform:uppercase;letter-spacing:.05em}
+.entity-legend {display:flex;gap:4px 14px;flex-wrap:wrap;max-height:95px;overflow:auto}
+.entity-legend button {display:inline-flex;align-items:center;gap:5px;color:var(--ink);background:transparent;border:0;cursor:pointer;font:inherit;text-align:left}
+.entity-legend button[aria-pressed=true]{font-weight:700}
+.entity-swatch {width:9px;height:9px;border-radius:50%;flex:none}
+.empty-dimension {padding:8px 14px}
+.ad-rankings {display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.rank-card {padding-bottom:12px}
+.rank-card p {font-size:12px;color:var(--muted);margin:0 15px 10px}
+.rank-card .tbl-wrap {max-height:214px}
+.rank-row {display:grid;grid-template-columns:minmax(70px,1fr) minmax(40px,1fr) 3ch;gap:8px;align-items:center;padding:3px 15px;width:100%;background:none;border:0;color:var(--ink);font:inherit;font-size:12px;text-align:left}
+.rank-name {white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.rank-bar {height:9px;border-radius:2px;background:var(--chart-conv);display:block}
+@media(max-width:700px) {
+ .ad-rankings {grid-template-columns:1fr}
+ .period-panel:popover-open {display:block}
+ .period-shortcuts {flex-direction:row;flex-wrap:wrap;padding:0 0 6px;border:0;gap:2px}
+ .calendars {gap:6px}
+ .calendar-grid > * {padding:3px 0}
+ .table-chart-pair table.dt tr > :first-child {max-width:min(var(--dim-width),65vw);min-width:min(var(--dim-width),65vw);width:min(var(--dim-width),65vw)}
+}
+
+.entity-legend {display:block;max-height:150px;border-top:1px solid var(--border);padding-top:6px}
+.entity-legend button {display:flex;white-space:nowrap;min-height:20px}
+.entity-legend small {font-size:inherit;color:var(--muted)}
+.entity-swatch {border-radius:2px}
+.pair-chart {padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px}
+.dt-daily tbody tr {cursor:pointer}
+@media(min-width:1101px) and (max-width:1500px) {
+  .topbar {gap:7px;padding-inline:14px}
+  .topbar .btn {padding-inline:8px}
+  .topbar .updated {font-size:10.5px}
+}
