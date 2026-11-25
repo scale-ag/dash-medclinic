@@ -199,8 +199,7 @@ somados, e nenhum dos dois é tratado como venda.
 
 ### Imposto Meta (ESTIMATIVA)
 
-- Fica ligado por padrão. O fator é `1/0,8785 ≈ 1,138303927`, configurável em
-  `config/dashboard.json` (`tax.net_share`). Ele **não** usa 1,13806.
+- Fica ligado por padrão. O fator estimado é `1,1385` (+13,85%), configurado em `config/dashboard.json` (`tax.factor`), seguindo o painel PRC.
 - É aplicado **uma única vez**, sobre o total bruto, no cálculo de exibição. O bruto é sempre preservado
   e aparece no card e no CSV.
 - O valor é rotulado **ESTIMATIVA** até a confirmação fiscal.
