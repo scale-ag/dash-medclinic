@@ -28,12 +28,12 @@ Não há Google, CRM, planilhas de leads, ROAS nem faturamento.
 - **Barra superior:** período, “Remover Filtros”, Imposto Meta, tema, última atualização e “Atualizar Dados”.
 - **Filtros secundários:** campanha, conjunto e anúncio, mais a exportação CSV, numa linha compacta abaixo da barra.
 - **Primeira dobra:** à esquerda, coluna de indicadores em formato de funil (investimento, impressões, cliques e resultado). À direita, painel com o gráfico combinado diário e a tabela diária. O gráfico mostra barras de resultado e linhas de investimento e custo, com o eixo de quantidade à esquerda e o de R$ à direita. A tabela tem heatmap por coluna e total fixo.
-- **Abaixo:** comparativo por médico (na Geral), a hierarquia campanha → conjunto → anúncio, e a conciliação e a metodologia em seções recolhidas.
+- **Abaixo:** comparativo por médico (na Geral), três tabelas de campanhas, conjuntos e anúncios com os nomes da Meta, totais e gráficos por dia, e a conciliação e a metodologia em seções recolhidas.
 
 Os filtros (período, campanha, conjunto e anúncio) valem para todas as abas.
 
-- **Presets:** ontem, últimos 7 dias completos, mês até ontem, mês anterior e personalizado.
-- **Hoje** só entra no período personalizado e aparece sempre marcado como **parcial**.
+- **Presets:** hoje, ontem, 3/7/14/30 dias incluindo hoje, este mês, mês passado, todo o período e duas datas personalizadas. Os atalhos de sete dias completos e mês até ontem também estão disponíveis.
+- Quando o período inclui **hoje**, o painel sinaliza o dia parcial.
 - **Exportar CSV** usa os mesmos filtros e protege contra *formula injection*.
 - **Imposto Meta** vem ligado por padrão e é rotulado **ESTIMATIVA**.
 - **Recarregar dados** relê o snapshot publicado. Esse botão **não** dispara uma nova coleta.

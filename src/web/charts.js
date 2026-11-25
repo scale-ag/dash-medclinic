@@ -69,7 +69,7 @@ export function renderTimeChart(container, opts) {
   }
 }
 
-function drawChart(container, { type, points, series, format, axisFormat, integer = false, title, emptyText = 'Sem dias no período.' }) {
+function drawChart(container, { type, points, series, format, axisFormat, integer = false, title, externalLegend = false, onSeriesClick, height = HEIGHT, emptyText = 'Sem dias no período.' }) {
   clear(container);
   container.classList.add('chart');
   if (!points.length) {
@@ -77,12 +77,12 @@ function drawChart(container, { type, points, series, format, axisFormat, intege
     return;
   }
   const leg = legend(series, type === 'line' ? 'line' : 'rect');
-  if (leg) container.append(leg);
+  if (leg && !externalLegend) container.append(leg);
   for (const li of container.querySelectorAll('.key')) li.style.setProperty('--key-color', `var(${li.dataset.color})`);
 
   const width = Math.max(280, container.clientWidth || 600);
   const plotW = width - M.left - M.right;
-  const plotH = HEIGHT - M.top - M.bottom;
+  const plotH = height - M.top - M.bottom;
   const n = points.length;
   const band = plotW / n;
 
@@ -93,9 +93,9 @@ function drawChart(container, { type, points, series, format, axisFormat, intege
   const ys = yScale(Math.max(0, ...totals), plotH, integer);
 
   const svg = s('svg', {
-    viewBox: `0 0 ${width} ${HEIGHT}`,
+    viewBox: `0 0 ${width} ${height}`,
     width: '100%',
-    height: HEIGHT,
+    height: height,
     role: 'img',
     'aria-label': `${title}. Use as setas para navegar pelos dias; os valores também estão na tabela diária.`,
     tabindex: '0',
@@ -173,6 +173,7 @@ function drawChart(container, { type, points, series, format, axisFormat, intege
       if (d) {
         const path = s('path', { d, class: 'line' });
         path.style.stroke = `var(${se.color})`;
+        if (onSeriesClick) path.addEventListener('click', e => onSeriesClick(se.key, e));
         g.append(path);
       }
       points.forEach((p, i) => {
@@ -184,6 +185,7 @@ function drawChart(container, { type, points, series, format, axisFormat, intege
         if (!isolated && !p.partial && i !== n - 1) return;
         const c = s('circle', { cx: i * band + band / 2, cy: ys.y(v), r: 4, class: `dot${p.partial ? ' partial' : ''}` });
         c.style.fill = `var(${se.color})`;
+        if (onSeriesClick) c.addEventListener('click', e => onSeriesClick(se.key, e));
         g.append(c);
       });
     }

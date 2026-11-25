@@ -33,13 +33,13 @@
   },
   "tax": {
     "enabled_by_default": true,
-    "net_share": 0.8785,
+    "factor": 1.1385,
     "label": "ESTIMATIVA",
     "status": "pendente_confirmacao_fiscal",
-    "description": "Imposto Meta estimado: valor bruto × 1/0,8785 (≈ 1,138303927). Estimativa até confirmação fiscal."
+    "description": "Imposto Meta estimado: valor bruto × 1,1385 (+13,85%). Estimativa até confirmação fiscal."
   },
   "ui": {
-    "default_preset": "month_to_yesterday",
+    "default_preset": "this_month",
     "freshness_warn_minutes": 90,
     "freshness_critical_minutes": 360,
     "pages_base_path": "/dash-medclinic/"

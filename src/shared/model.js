@@ -163,15 +163,19 @@ export function inRange(date, range) {
   return date >= range.since && date <= range.until;
 }
 
+function includesEntity(selection, id) {
+  return !selection || selection === id || selection.split(',').includes(id);
+}
+
 export function filterRows(rows, { range, campaignId, adsetId, adId } = {}) {
   if (!range || range.empty) return [];
   return rows.filter(
     (r) =>
       r.date >= range.since &&
       r.date <= range.until &&
-      (!campaignId || r.campaign_id === campaignId) &&
-      (!adsetId || r.adset_id === adsetId) &&
-      (!adId || r.ad_id === adId),
+      (includesEntity(campaignId, r.campaign_id)) &&
+      (includesEntity(adsetId, r.adset_id)) &&
+      (includesEntity(adId, r.ad_id)),
   );
 }
 
@@ -182,8 +186,8 @@ export function filterOptions(rows, { campaignId, adsetId } = {}) {
   const ad = new Map();
   for (const r of rows) {
     camp.set(r.campaign_id, r.campaign_name);
-    if (!campaignId || r.campaign_id === campaignId) adset.set(r.adset_id, r.adset_name);
-    if ((!campaignId || r.campaign_id === campaignId) && (!adsetId || r.adset_id === adsetId)) ad.set(r.ad_id, r.ad_name);
+    if (includesEntity(campaignId, r.campaign_id)) adset.set(r.adset_id, r.adset_name);
+    if ((includesEntity(campaignId, r.campaign_id)) && (includesEntity(adsetId, r.adset_id))) ad.set(r.ad_id, r.ad_name);
   }
   const toList = (m) =>
     [...m.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
