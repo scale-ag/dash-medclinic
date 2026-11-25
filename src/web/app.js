@@ -578,7 +578,7 @@ function renderFunnel(main, view, range) {
       'div',
       { class: 'kpis' },
       kpi(spendLabel(), fmtBRL(m.spend), state.tax ? `Bruto ${fmtBRL(m.spend_gross)} · imposto ESTIMADO` : 'Valor bruto da Meta', { hero: true }),
-      kpi(L.result, fmtInt(m.results), view.category === 'whatsapp' ? 'onsite_conversion.messaging_conversation_started_7d' : app.snapshot.api.follow_field, { hero: true }),
+      kpi(L.result, fmtInt(m.results), view.category === 'whatsapp' ? 'Conversas atribuídas aos anúncios no período' : 'Seguidores atribuídos aos anúncios no período', { hero: true }),
       kpi(L.cost, m.cost_per_result === null ? DASH : fmtBRL(m.cost_per_result), null, { hero: true, nullReason: m.cost_per_result === null ? `não calculável: 0 ${L.short.toLowerCase()} no período` : `${spendLabel().toLowerCase()} ÷ ${L.short.toLowerCase()}` }),
       kpi('Impressões', fmtInt(m.impressions)),
       kpi('Cliques no link', fmtInt(m.link_clicks)),

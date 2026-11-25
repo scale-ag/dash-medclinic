@@ -156,6 +156,10 @@ test('código do navegador não acessa a API nem credenciais; coletor só fala c
     assert.ok(!/graph\.facebook\.com|access_token|META_ACCESS_TOKEN|Bearer/.test(t), f);
     assert.ok(!/innerHTML|insertAdjacentHTML|document\.write|eval\(|new Function/.test(t.replace(/'innerHTML não é permitido'/, '')), `${f}: API de HTML inseguro`);
   }
+  // Identificadores técnicos da Meta ficam só na seção de metodologia (lidos do snapshot), nunca em cards.
+  const appJs = readFileSync(join(ROOT, 'src/web/app.js'), 'utf8');
+  assert.ok(!/onsite_conversion\.|'instagram_profile_follow'/.test(appJs), 'sem identificador técnico literal na UI');
+  assert.match(appJs, /Conversas atribuídas aos anúncios no período/);
   const client = readFileSync(join(ROOT, 'src/node/meta-client.js'), 'utf8');
   assert.equal([...client.matchAll(/https:\/\/[a-z0-9.-]+/gi)].map((m) => m[0].replace(/\.$/, '')).filter((u) => u !== 'https://graph.facebook.com').length, 0);
 });
