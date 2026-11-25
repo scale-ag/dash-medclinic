@@ -1,0 +1,35 @@
+# Testes em PRs e branches (sem secrets, sem coleta, sem deploy). Seguro para PRs de fork.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Testes automatizados (sem rede, sem secrets)
+        run: npm test
+      - name: Build de preview SINTÉTICO (não publicado) + varredura de credenciais
+        run: |
+          node scripts/make-synthetic.mjs --out .work/synthetic.json --today 2026-11-25
+          node scripts/build.mjs --snapshot .work/synthetic.json --out .work/dist-synthetic --allow-synthetic
+          node scripts/validate-dist.mjs --dist .work/dist-synthetic --allow-synthetic

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <title>MedClinic · Dashboard de captação</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Pular para o conteúdo</a>
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <div>
+            <div class="brand-name">MedClinic · Bauru/SP</div>
+            <div class="brand-sub">Captação Meta Ads · Dr. Ailton (Endocrinologia e Medicina do Esporte) · Dra. Taísa (Dermatologia/Tricologia)</div>
+          </div>
+        </div>
+        <div id="status" class="status" aria-label="Status dos dados"></div>
+      </div>
+    </header>
+    <div class="container">
+      <div id="banner"></div>
+      <nav id="tabs" class="tabs" aria-label="Visões"></nav>
+      <div id="filters" class="filters" role="group" aria-label="Filtros (valem para todas as visões)"></div>
+      <main id="main" tabindex="-1">
+        <p class="loading">Carregando snapshot…</p>
+      </main>
+      <footer class="footer">
+        Fonte: Meta Marketing API (somente leitura). Resultado de captação = conversas iniciadas no WhatsApp — não são pacientes, agendamentos ou consultas.
+        Datas em DD/MM/AAAA, fuso America/Sao_Paulo, valores em BRL.
+      </footer>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

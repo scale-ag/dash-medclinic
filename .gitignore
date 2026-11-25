@@ -1,0 +1,9 @@
+# Saídas locais — nunca versionar dados reais nem segredos
+.work/
+dist/
+data/
+*.local.json
+.env
+.env.*
+node_modules/
+screenshots/
