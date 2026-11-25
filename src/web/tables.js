@@ -68,7 +68,7 @@ function heatColor(rgb, v, lo, hi) {
  * columns: [{ key, label, num, sortValue(item), cell(item) -> Node|string, heat?: 'gasto'|'conv'|'seg', heatValue?(item) }]
  * footer: { [columnKey]: Node|string } — linha de total fixa (tfoot)
  */
-export function sortableTable({ caption, columns, items, sort, onSort, rowClass, footer, className = '' }) {
+export function sortableTable({ caption, columns, items, sort, onSort, rowClass, rowAttrs, footer, className = '' }) {
   const sorted = sortItems(items, columns, sort);
   const ext = {};
   for (const c of columns) {
@@ -96,7 +96,7 @@ export function sortableTable({ caption, columns, items, sort, onSort, rowClass,
       h(
         'tbody',
         null,
-        sorted.map((it) => h('tr', { class: rowClass ? rowClass(it) : null }, columns.map((c, i) => cellFor(c, it, i === 0)))),
+        sorted.map((it) => h('tr', { class: rowClass ? rowClass(it) : null, ...rowAttrs?.(it) }, columns.map((c, i) => cellFor(c, it, i === 0)))),
       ),
       footer ? h('tfoot', null, h('tr', null, columns.map((c, i) => h(i === 0 ? 'th' : 'td', { class: c.num ? 'num' : null, scope: i === 0 ? 'row' : null }, footer[c.key] ?? '')))) : null,
     ),
