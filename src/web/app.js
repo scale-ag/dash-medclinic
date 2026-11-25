@@ -4,8 +4,10 @@
 // Layout no padrão visual dos dashboards da agência Scale (sidebar, topbar, funil + painel combinado).
 import { h, clear, put } from './dom.js';
 import { renderTimeChart, renderComboChart } from './charts.js';
-import { sortableTable, treeTable } from './tables.js';
-import { PRESETS, PRESET_IDS, presetRange, dateInTimeZone, formatDateBR, formatDateTimeBR, isIsoDate, diffDays, weekdayBR } from './shared/dates.js';
+import { sortableTable } from './tables.js';
+import { hierarchy, adRanking } from './hierarchy.js';
+import { periodPicker } from './period.js';
+import { PRESET_IDS, presetRange, dateInTimeZone, formatDateBR, formatDateTimeBR, isIsoDate, diffDays, weekdayBR } from './shared/dates.js';
 import {
   VIEWS,
   findView,
@@ -15,7 +17,6 @@ import {
   filterRows,
   filterOptions,
   dailySeries,
-  buildTree,
   reconciliation,
   doctorOutsideCost,
   coverageSummary,
@@ -41,9 +42,7 @@ const state = {
   adId: '',
   tax: true,
   dailySort: { key: 'date', dir: 'desc' },
-  treeSort: { key: 'spend', dir: 'desc' },
   pendingSort: { key: 'spend', dir: 'desc' },
-  expanded: new Set(),
   open: new Set(),
 };
 
@@ -60,7 +59,7 @@ function readHash() {
   if (isIsoDate(p.get('ate') || '')) state.until = p.get('ate');
   for (const [k, q] of [['campaignId', 'c'], ['adsetId', 'cj'], ['adId', 'an']]) {
     const val = p.get(q) || '';
-    state[k] = /^\d{1,25}$/.test(val) ? val : '';
+    state[k] = /^\d{1,25}(,\d{1,25})*$/.test(val) ? val : '';
   }
   if (p.has('imp')) state.tax = p.get('imp') !== '0';
 }
@@ -151,7 +150,7 @@ function partialDay() {
   return app.snapshot.today_is_partial ? app.snapshot.today : null;
 }
 function currentRange() {
-  return presetRange(state.preset, today(), { since: state.since, until: state.until });
+  return presetRange(state.preset, today(), { since: state.since, until: state.until, dataStart: app.snapshot.data_start });
 }
 function filters(range) {
   return { range, campaignId: state.campaignId, adsetId: state.adsetId, adId: state.adId };
@@ -324,33 +323,11 @@ function renderTopbar(view, range) {
     h('button', { type: 'button', class: 'ham', id: 'navBtn', 'aria-controls': 'sidebar', 'aria-expanded': open ? 'true' : 'false', 'aria-label': open ? 'Fechar menu' : 'Abrir menu', onClick: () => setNav(!document.body.classList.contains('nav-open'), { focus: true }) }, '☰'),
     h('h1', { class: 'ptitle' }, view.label),
     h('div', { class: 'sep', 'aria-hidden': 'true' }),
-    h(
-      'div',
-      { class: 'period' },
-      h(
-        'select',
-        {
-          class: 'select',
-          'aria-label': 'Período',
-          onChange: (e) => {
-            state.preset = e.target.value;
-            if (state.preset === 'custom' && (!state.since || !state.until)) {
-              const r = presetRange(app.config.ui.default_preset || 'month_to_yesterday', td);
-              state.since = r.since;
-              state.until = r.empty ? td : r.until;
-            }
-            update();
-          },
-        },
-        PRESETS.map((p) => h('option', { value: p.id, selected: p.id === state.preset }, `🗓 ${p.label}`)),
-      ),
-      state.preset === 'custom'
-        ? [
-            h('input', { type: 'date', 'aria-label': 'De', value: state.since, min: app.snapshot.data_start, max: td, onChange: (e) => ((state.since = e.target.value), update()) }),
-            h('input', { type: 'date', 'aria-label': 'Até (hoje = parcial)', title: 'Hoje entra como dia parcial', value: state.until, min: app.snapshot.data_start, max: td, onChange: (e) => ((state.until = e.target.value), update()) }),
-          ]
-        : null,
-    ),
+    periodPicker({ preset: state.preset, range, today: td, start: app.snapshot.data_start, apply(preset, since, until) {
+      Object.assign(state, { preset, since, until });
+      update();
+      document.querySelector('.period-trigger')?.focus();
+    } }),
     h('button', { type: 'button', class: 'btn', onClick: clearFilters }, 'Remover Filtros'),
     h('div', { class: 'sep', 'aria-hidden': 'true' }),
     h(
@@ -404,7 +381,7 @@ function renderSubbar(view, range) {
         { class: 'select', onChange: (e) => onChange(e.target.value) },
         h('option', { value: '', selected: !value }, allLabel),
         list.map((o) => h('option', { value: o.id, selected: o.id === value }, o.name)),
-        value && !known ? h('option', { value, selected: true }, `(sem dados nesta visão/período) ${value}`) : null,
+        value && !known ? h('option', { value, selected: true }, `${value.includes(',') ? value.split(',').length + ' selecionados' : '(sem dados nesta visão/período) ' + value}`) : null,
       ),
     );
   };
@@ -478,87 +455,31 @@ function exportCsv(view, range) {
 }
 
 // ---------- Hierarquia (drill-down) ----------
-function metricColumns(view, { withResult = true } = {}) {
-  const L = view.kind === 'funnel' ? resultLabels(view) : null;
-  const metrics = (t) => deriveMetrics(t, { taxEnabled: state.tax, taxFactor: app.taxFactor, result: view.result || null });
-  const cols = [{ key: 'spend', label: spendShort(), num: true, sortValue: (n) => n.totals.spend_cents, cell: (n) => fmtBRL(spendOf(n.totals.spend_cents)) }];
-  if (withResult && L) {
-    cols.push(
-      { key: 'result', label: L.short, num: true, sortValue: (n) => n.totals[view.result], cell: (n) => fmtInt(n.totals[view.result]) },
-      { key: 'cost', label: L.cost, num: true, sortValue: (n) => metrics(n.totals).cost_per_result, cell: (n) => costText(metrics(n.totals).cost_per_result, `não calculável: 0 ${L.short.toLowerCase()}`) },
-    );
-  }
-  cols.push(
-    { key: 'impressions', label: 'Impressões', num: true, sortValue: (n) => n.totals.impressions, cell: (n) => fmtInt(n.totals.impressions) },
-    { key: 'clicks', label: 'Cliques no link', num: true, sortValue: (n) => n.totals.link_clicks, cell: (n) => fmtInt(n.totals.link_clicks) },
-    { key: 'ctr', label: 'CTR', num: true, sortValue: (n) => metrics(n.totals).ctr, cell: (n) => fmtPct(metrics(n.totals).ctr) },
-    { key: 'cpc', label: 'CPC', num: true, sortValue: (n) => metrics(n.totals).cpc, cell: (n) => costText(metrics(n.totals).cpc, 'não calculável: 0 cliques') },
-    { key: 'cpm', label: 'CPM', num: true, sortValue: (n) => metrics(n.totals).cpm, cell: (n) => costText(metrics(n.totals).cpm, 'não calculável: 0 impressões') },
-  );
-  return cols;
-}
-
 function categoryBadge(cat) {
   if (!cat) return '';
   const tone = { whatsapp: 'ok', seguidores: 'ok', excluido: 'muted', nao_conciliado: 'warn', nao_classificado: 'warn', misto: 'warn' }[cat] || 'muted';
   return h('span', { class: `badge badge-${tone}` }, CATEGORY_LABELS[cat] || 'Misto (ver conjuntos)');
 }
 
-function treeBlock(view, rows, { overview = false } = {}) {
-  const prepared = overview
-    ? rows.map((r) => ({ ...r, conversations: r.category === CATEGORY.WHATSAPP ? r.conversations : 0, follows: r.category === CATEGORY.SEGUIDORES ? r.follows : 0 }))
-    : rows;
-  const nodes = buildTree(prepared).map((c) => {
-    const cats = new Set(c.children.map((s) => s.category));
-    return { ...c, category: cats.size === 1 ? [...cats][0] : 'misto' };
-  });
-  const first = {
-    key: 'name',
-    label: 'Campanha / conjunto / anúncio',
-    sortValue: (n) => n.name,
-    cell: (n) =>
-      h(
-        'span',
-        { class: 'cell-name' },
-        h('span', { class: 'name-text', title: n.id }, n.name),
-        n.level === 'campaign' ? h('span', { class: 'meta' }, `${n.account_label} · ${n.id}`) : null,
-        n.level === 'adset' ? h('span', { class: 'meta' }, `${n.destination_type || 'destino desconhecido'}${n.optimization_goal ? ` · ${n.optimization_goal}` : ''} · ${n.id}`) : null,
-        n.level === 'ad' ? h('span', { class: 'meta' }, n.id) : null,
-      ),
+function entityPanels(view, range) {
+  const rows = filterRows(viewRows(app.model, view), { range });
+  const select = (key, id, multiple) => {
+    const field = key + 'Id';
+    const ids = new Set(state[field].split(',').filter(Boolean));
+    if (multiple) {
+      if (ids.has(id)) ids.delete(id);
+      else ids.add(id);
+      state[field] = [...ids].join(',');
+    } else {
+      state[field] = state[field] === id ? '' : id;
+    }
+    if (key === 'campaign') state.adsetId = '';
+    if (key !== 'ad') state.adId = '';
+    update();
   };
-  const extra = overview
-    ? [
-        { key: 'category', label: 'Categoria', sortValue: (n) => (n.category ? CATEGORY_LABELS[n.category] || 'Misto' : null), cell: (n) => (n.level === 'ad' ? '' : categoryBadge(n.category)) },
-        { key: 'conv', label: 'Conversas WA', num: true, sortValue: (n) => n.totals.conversations, cell: (n) => fmtInt(n.totals.conversations) },
-        { key: 'fol', label: 'Seguidores', num: true, sortValue: (n) => n.totals.follows, cell: (n) => fmtInt(n.totals.follows) },
-      ]
-    : [];
-  const columns = [first, ...extra, ...metricColumns(view, { withResult: !overview })];
-  return [
-    secTitle('Hierarquia · Campanha → Conjunto → Anúncio'),
-    h(
-      'p',
-      { class: 'view-intro' },
-      overview
-        ? 'Todas as campanhas com entrega no período. Conversas contam apenas conjuntos WhatsApp conciliados; seguidores apenas campanhas de seguidores conciliadas. Clique em + para abrir; clique no cabeçalho para ordenar.'
-        : 'Clique em + para abrir conjuntos e anúncios; clique no cabeçalho para ordenar.',
-    ),
-    nodes.length
-      ? treeTable({
-          caption: 'Detalhamento por campanha, conjunto e anúncio',
-          columns,
-          nodes,
-          sort: state.treeSort,
-          onSort: (s) => ((state.treeSort = s), update()),
-          expanded: state.expanded,
-          onToggle: (k) => {
-            if (state.expanded.has(k)) state.expanded.delete(k);
-            else state.expanded.add(k);
-            update();
-          },
-        })
-      : card(h('p', { class: 'muted' }, 'Nenhuma entrega no período/filtros selecionados.')),
-  ];
+  const tax = { taxEnabled: state.tax, taxFactor: app.taxFactor };
+  const ranking = view.kind === 'funnel' ? adRanking(filterRows(rows, filters(range)), view, tax, select) : [];
+  return [ranking, hierarchy({ rows, view, range, state, tax, coveredDates: app.model.coveredDates, select, render: update })];
 }
 
 // ---------- Painel combinado (gráfico + tabela diária no mesmo painel) ----------
@@ -575,6 +496,12 @@ function dailyTable(caption, columns, items, footer) {
     items,
     sort: state.dailySort,
     onSort: (s) => ((state.dailySort = s), update()),
+    rowAttrs: p => {
+      const pickDay = () => { Object.assign(state, {preset:'custom', since:p.date, until:p.date}); update(); };
+      return {tabindex:0, title:'Filtrar '+formatDateBR(p.date), onClick:pickDay, onKeydown:e=>{
+        if (e.key==='Enter' || e.key===' ') { e.preventDefault(); pickDay(); }
+      }};
+    },
     rowClass: (p) => (p.partial ? 'row-partial' : !p.covered ? 'row-uncovered' : null),
     footer,
     className: 'dt-daily',
@@ -727,7 +654,8 @@ function renderFunnel(main, view, range) {
     });
     const cov = (p, fn) => (p.covered ? fn() : h('span', { class: 'na' }, 'sem coleta'));
     const columns = [
-      { key: 'date', label: 'Dia', sortValue: (p) => p.date, cell: dayCell },
+      { key: 'date', label: 'Data', sortValue: p => p.date, cell: p => formatDateBR(p.date) },
+      { key: 'weekday', label: 'Dia', cell: p => weekdayBR(p.date) },
       { key: 'spend', label: spendShort(), num: true, sortValue: (p) => (p.covered ? p.totals.spend_cents : null), heat: 'gasto', heatValue: (p) => (p.covered ? p.totals.spend_cents : null), cell: (p) => cov(p, () => fmtBRL(spendOf(p.totals.spend_cents))) },
       { key: 'result', label: L.short, num: true, sortValue: (p) => (p.covered ? p.totals[view.result] : null), heat: L.heat, heatValue: (p) => (p.covered ? p.totals[view.result] : null), cell: (p) => cov(p, () => fmtInt(p.totals[view.result])) },
       { key: 'cost', label: L.cost, num: true, sortValue: (p) => (p.covered ? metrics(p.totals).cost_per_result : null), cell: (p) => cov(p, () => costText(metrics(p.totals).cost_per_result, 'não calculável')) },
@@ -737,8 +665,17 @@ function renderFunnel(main, view, range) {
       { key: 'cpc', label: 'CPC', num: true, sortValue: (p) => (p.covered ? metrics(p.totals).cpc : null), cell: (p) => cov(p, () => costText(metrics(p.totals).cpc, 'não calculável')) },
       { key: 'cpm', label: 'CPM', num: true, sortValue: (p) => (p.covered ? metrics(p.totals).cpm : null), cell: (p) => cov(p, () => costText(metrics(p.totals).cpm, 'não calculável')) },
     ];
+    const order = ['date','weekday','spend','cpm','ctr','cr','convlp','result','cost','impressions','clicks','cpc'];
+    columns.find(c => c.key === 'spend').label = 'Gasto';
+    columns.find(c => c.key === 'cost').label = view.result === 'follows' ? 'CPS' : 'CPL';
+    if (view.result === 'conversations') {
+      for (const [key, label] of [['cr', 'CR'], ['convlp', 'ConvLP']]) {
+        columns.push({ key, label, num: true, cell: () => h('span', {title: 'Sem página de destino neste funil.'}, DASH) });
+      }
+    }
+    columns.sort((a,b) => order.indexOf(a.key) - order.indexOf(b.key));
     const footer = {
-      date: 'Total do período',
+      date: 'Total Geral', cr: DASH, convlp: DASH,
       spend: fmtBRL(m.spend),
       result: fmtInt(m.results),
       cost: costText(m.cost_per_result, 'não calculável'),
@@ -770,7 +707,7 @@ function renderFunnel(main, view, range) {
   }
   put(main, h('div', { class: 'grid funnel-grid' }, leftCard, right));
   if (!noDelivery) {
-    put(main, treeBlock(view, rows));
+    put(main, entityPanels(view, range));
     if (idle.length && !entityFilterActive()) put(main, identifiedSection(idle, 'Campanhas identificadas sem veiculação no período'));
   }
   put(main, secTitle('Dados técnicos'), disclosure('metodologia', 'Coleta, cobertura e metodologia', 'fonte, versão da API, atribuição, imposto, mapa', methodologyList()));
@@ -963,7 +900,7 @@ function renderOverview(main, view, range) {
       ],
     }),
   );
-  put(main, treeBlock(view, rows, { overview: true }));
+  put(main, entityPanels(view, range));
 
   // Evidências em disclosures fechados (não poluem a primeira dobra).
   const stackPts = points.map((p) => ({ ...p, values: Object.fromEntries(OVERVIEW_SERIES.map((s) => [s.key, spendOf(bucketOf(p.date, s.key).spend_cents)])) }));
@@ -988,7 +925,13 @@ function renderOverview(main, view, range) {
         items: points,
         sort: state.dailySort,
         onSort: (x) => ((state.dailySort = x), update()),
-        rowClass: (p) => (p.partial ? 'row-partial' : !p.covered ? 'row-uncovered' : null),
+        rowAttrs: p => {
+      const pickDay = () => { Object.assign(state, {preset:'custom', since:p.date, until:p.date}); update(); };
+      return {tabindex:0, title:'Filtrar '+formatDateBR(p.date), onClick:pickDay, onKeydown:e=>{
+        if (e.key==='Enter' || e.key===' ') { e.preventDefault(); pickDay(); }
+      }};
+    },
+    rowClass: (p) => (p.partial ? 'row-partial' : !p.covered ? 'row-uncovered' : null),
         footer: { date: 'Total do período', total: fmtBRL(all.spend), ...Object.fromEntries(OVERVIEW_SERIES.map((se) => [se.key, fmtBRL(spendOf(seriesTotals[se.key].spend_cents))])) },
       }),
     ),
@@ -1096,7 +1039,7 @@ function methodologyList() {
     item('Atribuição', api.attribution_rule || 'n/d', api.action_report_time ? ` · action_report_time=${api.action_report_time}` : ' · action_report_time padrão da API'),
     item('Conversas (WhatsApp)', `actions[action_type = ${api.conversation_action_type}], somente conjuntos com destination_type WHATSAPP. Não usa total_messaging_connection nem first_reply; Messenger/Instagram Direct não contam.`),
     item('Seguidores', `campo ${api.follow_field}, somente campanhas mapeadas como seguidores com destino conciliado. Seguidores incidentais de campanhas de WhatsApp não contam.`),
-    item('Imposto Meta', `${app.config.tax.label}: bruto × 1/${String(app.config.tax.net_share).replace('.', ',')} ≈ ${fmtDec(app.taxFactor, 9)} — aplicado uma única vez sobre o bruto; ${state.tax ? 'ligado' : 'desligado'} agora. Pendente de confirmação fiscal.`),
+    item('Imposto Meta', `${app.config.tax.label}: bruto × ${fmtDec(app.taxFactor, 4)} — aplicado uma única vez sobre o bruto; ${state.tax ? 'ligado' : 'desligado'} agora. Pendente de confirmação fiscal.`),
     item('Custos', 'Razão dos totais do período (não média de custos diários). Denominador zero = não calculável (—). Curvas dos gráficos são só suavização visual; tooltip e tabela mostram os valores originais.'),
     item('Mapa de classificação', `versão ${map.version} · ${Object.keys(map.campaigns).filter((k) => !k.startsWith('$')).length} campanhas mapeadas · ${states.conferido} conferidas com a UI · ${states.destino_conferido} com destino conferido via API (resultados a comparar com a UI) · ${states.pendente} a validar`),
     item('Alcance/frequência', 'Não exibidos: alcance não pode ser somado entre dias/anúncios e não é inventado.'),
