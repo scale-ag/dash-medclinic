@@ -1,0 +1,46 @@
+{
+  "$comment": "Configuração de coleta e exibição. Variáveis de ambiente DATA_START, REPROCESS_DAYS, WINDOW_DAYS e META_API_VERSION sobrescrevem os valores abaixo no coletor.",
+  "data_start": "2026-11-01",
+  "reprocess_days": 28,
+  "window_days": 7,
+  "meta_api_version": "v25.0",
+  "insights": {
+    "use_unified_attribution_setting": true,
+    "action_report_time": null,
+    "conversation_action_type": "onsite_conversion.messaging_conversation_started_7d",
+    "follow_field": "instagram_profile_follow",
+    "page_limit": 500,
+    "ad_effective_status_filter": [
+      "ACTIVE",
+      "PAUSED",
+      "DELETED",
+      "ARCHIVED",
+      "CAMPAIGN_PAUSED",
+      "ADSET_PAUSED",
+      "IN_PROCESS",
+      "WITH_ISSUES",
+      "PENDING_REVIEW",
+      "DISAPPROVED",
+      "PREAPPROVED",
+      "PENDING_BILLING_INFO"
+    ]
+  },
+  "reconciliation": {
+    "$comment": "Diferença tolerada entre o gasto da conta (level=account) e a soma dos anúncios coletados no período inteiro.",
+    "max_abs_diff_brl": 1.0,
+    "max_rel_diff": 0.01
+  },
+  "tax": {
+    "enabled_by_default": true,
+    "net_share": 0.8785,
+    "label": "ESTIMATIVA",
+    "status": "pendente_confirmacao_fiscal",
+    "description": "Imposto Meta estimado: valor bruto × 1/0,8785 (≈ 1,138303927). Estimativa até confirmação fiscal."
+  },
+  "ui": {
+    "default_preset": "month_to_yesterday",
+    "freshness_warn_minutes": 90,
+    "freshness_critical_minutes": 360,
+    "pages_base_path": "/dash-medclinic/"
+  }
+}

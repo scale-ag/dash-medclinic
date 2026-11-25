@@ -1,0 +1,117 @@
+{
+  "$comment": "Mapa EXPLÍCITO campaign_id -> médico -> funil. A conta e o prefixo do nome (ENGJ/TRAF/DTS/DAT) NÃO determinam a classificação. Campanhas fora deste mapa ficam como 'não classificadas' e não entram em nenhum custo. Funis 'whatsapp' e 'seguidores' são conferidos por conjunto contra destination_type; divergentes ou mistos ficam 'não conciliados' e fora do custo.",
+  "version": "2026-11-25-inicial",
+  "doctors": {
+    "ailton": {
+      "label": "Dr. Ailton",
+      "specialty": "Endocrinologia e Medicina do Esporte"
+    },
+    "taisa": {
+      "label": "Dra. Taísa",
+      "specialty": "Dermatologia / Tricologia"
+    }
+  },
+  "funnels": {
+    "whatsapp": {
+      "label": "WhatsApp",
+      "result": "conversations",
+      "result_label": "Conversas iniciadas no WhatsApp",
+      "expected_destination_types": ["WHATSAPP"]
+    },
+    "seguidores": {
+      "label": "Seguidores",
+      "result": "follows",
+      "result_label": "Seguidores no Instagram",
+      "expected_destination_types": ["INSTAGRAM_PROFILE"]
+    },
+    "excluido": {
+      "label": "Fora da captação",
+      "result": null
+    }
+  },
+  "campaigns": {
+    "120242361567150317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "[WhatsApp][Taísa]",
+      "validation": "pendente",
+      "note": "Histórico da Taísa na CA01. Destino ainda a validar (esperado WHATSAPP)."
+    },
+    "120243388359980317": {
+      "account_id": "203811442663021",
+      "doctor": "ailton",
+      "funnel": "whatsapp",
+      "name_observed": "[WhatsApp][Ailton]",
+      "validation": "pendente",
+      "note": "Destino ainda a validar (esperado WHATSAPP)."
+    },
+    "120248339618150317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "DTS Ads tricologia",
+      "validation": "pendente",
+      "note": "Histórico da Taísa na CA01 (tricologia). Destino ainda a validar (esperado WHATSAPP)."
+    },
+    "120248374076630317": {
+      "account_id": "203811442663021",
+      "doctor": "ailton",
+      "funnel": "whatsapp",
+      "name_observed": "DAT WPP Top Ads",
+      "validation": "pendente",
+      "note": "Destino ainda a validar (esperado WHATSAPP)."
+    },
+    "120248471528140317": {
+      "account_id": "203811442663021",
+      "doctor": "ailton",
+      "funnel": "whatsapp",
+      "name_observed": "DAT WPP Teste de Ads",
+      "validation": "pendente",
+      "note": "Destino ainda a validar (esperado WHATSAPP)."
+    },
+    "120246982288180317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "excluido",
+      "exclusion_reason": "VideoView",
+      "name_observed": "VideoView Taísa",
+      "validation": "pendente"
+    },
+    "120246982670850317": {
+      "account_id": "203811442663021",
+      "doctor": "ailton",
+      "funnel": "excluido",
+      "exclusion_reason": "VideoView",
+      "name_observed": "VideoView Ailton",
+      "validation": "pendente"
+    },
+    "120248258608230317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "excluido",
+      "exclusion_reason": "Site / Landing page",
+      "name_observed": "DTS LPV4",
+      "validation": "pendente"
+    },
+    "120248334203780317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "excluido",
+      "exclusion_reason": "Site / Landing page",
+      "name_observed": "DTS LPV6",
+      "validation": "pendente"
+    },
+    "120251418554480262": {
+      "account_id": "1530307658790959",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "DTS ENGJ ABO Teste de Ads",
+      "validation": "pendente",
+      "note": "Objetivo de engajamento; só conta se o conjunto tiver destination_type WHATSAPP."
+    }
+  },
+  "adset_overrides": {
+    "$comment": "Conciliação manual por conjunto (opcional), após conferência na UI da Meta. Formato: \"<adset_id>\": { \"doctor\": \"taisa\", \"funnel\": \"whatsapp\", \"accept_destination_type\": \"<DESTINO>\", \"note\": \"conferido em DD/MM/AAAA\" }. Nenhum override existe hoje."
+  }
+}

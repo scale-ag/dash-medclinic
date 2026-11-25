@@ -1,0 +1,22 @@
+{
+  "name": "dash-medclinic",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dashboard MedClinic (Bauru/SP): captação por conversas iniciadas no WhatsApp e seguidores, por médico. Fonte: Meta Marketing API (somente leitura).",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"test/**/*.test.js\"",
+    "collect": "node scripts/collect.mjs",
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/validate-dist.mjs",
+    "gate": "node scripts/publish-gate.mjs",
+    "preview": "node scripts/serve.mjs",
+    "synthetic": "node scripts/make-synthetic.mjs",
+    "preview:synthetic": "node scripts/make-synthetic.mjs --out .work/synthetic-snapshot.json && node scripts/build.mjs --snapshot .work/synthetic-snapshot.json --out .work/dist-synthetic --allow-synthetic && node scripts/serve.mjs --dir .work/dist-synthetic",
+    "ui-check": "node scripts/ui-check.mjs"
+  }
+}

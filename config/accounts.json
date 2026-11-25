@@ -1,0 +1,18 @@
+{
+  "$comment": "Allowlist de contas consultadas (somente leitura). O coletor recusa qualquer conta fora desta lista.",
+  "business_id": "437935417525828",
+  "expected_currency": "BRL",
+  "expected_timezone": "America/Sao_Paulo",
+  "accounts": [
+    {
+      "id": "203811442663021",
+      "label": "CA01",
+      "description": "CA01 — Dr. Ailton (contém histórico da Dra. Taísa)"
+    },
+    {
+      "id": "1530307658790959",
+      "label": "CA02",
+      "description": "CA02 — Dra. Taísa"
+    }
+  ]
+}
