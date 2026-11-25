@@ -20,6 +20,7 @@ import {
   coverageSummary,
   identifiedCampaigns,
   pendingDoctorAdsets,
+  followersStatus,
 } from './shared/model.js';
 import { sumRows, deriveMetrics, taxFactorFromConfig, spendBRL, ratio, emptyTotals, addRowInto } from './shared/metrics.js';
 import { CATEGORY, CATEGORY_LABELS } from './shared/classify.js';
@@ -720,7 +721,15 @@ function renderOverview(main, view, range) {
       kpi(`${spendLabel()} — total`, fmtBRL(spendOf(total.spend_cents)), state.tax ? `Bruto ${fmtBRL(total.spend_cents / 100)} · imposto ESTIMADO` : 'Todas as campanhas com entrega nas 2 contas', { hero: true }),
       kpi('Classificado', fmtBRL(spendOf(classifiedCents)), 'WhatsApp + Seguidores + Fora da captação'),
       kpi('WhatsApp (conciliado)', fmtBRL(spendOf(cat.whatsapp.spend_cents)), `${fmtInt(cat.whatsapp.conversations)} conversas iniciadas`),
-      kpi('Seguidores (conciliado)', fmtBRL(spendOf(cat.seguidores.spend_cents)), cat.seguidores.rows ? `${fmtInt(cat.seguidores.follows)} seguidores` : 'Nenhuma campanha de seguidores identificada'),
+      kpi(
+        'Seguidores (conciliado)',
+        fmtBRL(spendOf(cat.seguidores.spend_cents)),
+        {
+          com_veiculacao: `${fmtInt(cat.seguidores.follows)} seguidores`,
+          identificada_sem_veiculacao: 'Campanhas identificadas, sem veiculação no período',
+          sem_campanha: 'Nenhuma campanha de seguidores identificada',
+        }[followersStatus(map, cat.seguidores)],
+      ),
       kpi('Fora da captação', fmtBRL(spendOf(cat.excluido.spend_cents)), 'LP/site/VideoView — fora de qualquer custo'),
       kpi('Pendente de conciliação', fmtBRL(spendOf(pendingCents)), 'Não classificado ou destino misto/divergente', { tone: pendingCents > 0 ? 'warn' : null }),
     ),

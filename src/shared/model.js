@@ -134,6 +134,17 @@ export function identifiedCampaigns(model, view, range) {
   });
 }
 
+/**
+ * Situação de seguidores na visão Geral: 'com_veiculacao' (há linhas conciliadas no período),
+ * 'identificada_sem_veiculacao' (há campanha/conjunto mapeado para algum médico, sem entrega no período)
+ * ou 'sem_campanha' (nada mapeado). Só o último é "inexistente".
+ */
+export function followersStatus(map, seguidoresTotals) {
+  if (seguidoresTotals?.rows > 0) return 'com_veiculacao';
+  const mapped = Object.keys(map.doctors || {}).some((d) => mappedCampaignsFor(map, { kind: 'funnel', doctor: d, category: 'seguidores' }).length > 0);
+  return mapped ? 'identificada_sem_veiculacao' : 'sem_campanha';
+}
+
 /** Conjuntos de campanhas mistas por médico (deste funil) que ainda aguardam confirmação de médico. */
 export function pendingDoctorAdsets(model, view) {
   const out = [];

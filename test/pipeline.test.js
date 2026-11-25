@@ -118,8 +118,10 @@ test('conciliação conta x anúncios com tolerância', () => {
 });
 
 test('workflow de deploy: permissões mínimas, ações fixadas por SHA, portão antes do upload, secrets só na coleta', () => {
-  const y = readFileSync(join(ROOT, '.github/workflows/deploy.yml'), 'utf8');
-  const ci = readFileSync(join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+  // Normaliza CRLF -> LF (checkout no Windows com core.autocrlf) antes das regex multilinha.
+  const readLf = (rel) => readFileSync(join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n');
+  const y = readLf('.github/workflows/deploy.yml');
+  const ci = readLf('.github/workflows/ci.yml');
   for (const text of [y, ci]) {
     const uses = [...text.matchAll(/uses:\s*(\S+)/g)].map((m) => m[1]);
     assert.ok(uses.length > 0);

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildModel, buildTree, coverageSummary, dailySeries, doctorOutsideCost, filterOptions, filterRows, findView, reconciliation, viewRows } from '../src/shared/model.js';
+import { buildModel, buildTree, coverageSummary, dailySeries, doctorOutsideCost, filterOptions, filterRows, findView, followersStatus, reconciliation, viewRows } from '../src/shared/model.js';
 import { CATEGORY } from '../src/shared/classify.js';
 import { sumRows } from '../src/shared/metrics.js';
 import { presetRange } from '../src/shared/dates.js';
@@ -74,6 +74,17 @@ test('conciliação: categorias somam o total, sem dupla contagem; WhatsApp por 
   assert.ok(rec2.pending.some((p) => p.category === CATEGORY.NAO_CONCILIADO && p.destination_type === 'MESSAGING_INSTAGRAM_DIRECT_WHATSAPP'));
   assert.ok(doctorOutsideCost(m2, 'taisa', range).byCategory[CATEGORY.NAO_CONCILIADO].spend_cents > 0);
   assert.equal(rec2.byDoctor.taisa.whatsapp.spend_cents, rec.byDoctor.taisa.whatsapp.spend_cents, 'CPL da Taísa não muda');
+});
+
+test('card Seguidores da Geral: identificada sem veiculação ≠ inexistente', () => {
+  const range = { since: '2026-11-01', until: '2026-11-24' };
+  const rec = reconciliation(model, filterRows(model.rows, { range }), range);
+  assert.equal(rec.byCategory[CATEGORY.SEGUIDORES].spend_cents, 0);
+  assert.equal(followersStatus(MAP, rec.byCategory[CATEGORY.SEGUIDORES]), 'identificada_sem_veiculacao');
+  const noFollowers = structuredClone(MAP);
+  for (const [id, e] of Object.entries(noFollowers.campaigns)) if (e.funnel === 'seguidores') delete noFollowers.campaigns[id];
+  assert.equal(followersStatus(noFollowers, rec.byCategory[CATEGORY.SEGUIDORES]), 'sem_campanha', '“inexistente” só sem mapeamento');
+  assert.equal(followersStatus(MAP, { rows: 3, follows: 10 }), 'com_veiculacao');
 });
 
 test('árvore de drill-down soma igual às linhas em todos os níveis', () => {

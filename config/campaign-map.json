@@ -1,6 +1,6 @@
 {
   "$comment": "Mapa EXPLÍCITO campaign_id -> médico -> funil. A conta e o prefixo do nome (ENGJ/TRAF/DTS/DAT) NÃO determinam a classificação. Campanhas fora deste mapa ficam como 'não classificadas' e não entram em nenhum custo. Funis 'whatsapp' e 'seguidores' são conferidos por conjunto contra destination_type; divergentes ou mistos ficam 'não conciliados' e fora do custo. Campanha MISTA POR MÉDICO: doctor=null + doctor_scope='adset' + adsets{<adset_id>: {doctor, note}}; conjunto com doctor=null (a confirmar) ou ausente do mapa fica fora de qualquer custo. Conciliação manual de destino por conjunto: adsets{<adset_id>: {accept_destination_type, note}}. validation: pendente | destino_conferido (destino/otimização conferidos via API; resultados ainda a comparar com a UI) | conferido (comparado com a UI).",
-  "version": "2026-11-25-r3",
+  "version": "2026-11-25-r4",
   "doctors": {
     "ailton": {
       "label": "Dr. Ailton",
@@ -118,27 +118,27 @@
       "account_id": "1530307658790959",
       "doctor": "taisa",
       "funnel": "whatsapp",
-      "name_observed": "(CA02) campanha WhatsApp — CONVERSATIONS",
+      "name_observed": "DTS (CA02) WhatsApp — CONVERSATIONS",
       "validation": "destino_conferido",
-      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "doctor_basis": "CONFIRMADO Dra. Taísa em 25/11/2026: nomenclatura DTS e destino WHATSAPP (verificação direta).",
       "note": "Destino WHATSAPP, optimization_goal CONVERSATIONS (conferido via API em 25/11/2026)."
     },
     "120251521306570262": {
       "account_id": "1530307658790959",
       "doctor": "taisa",
       "funnel": "whatsapp",
-      "name_observed": "(CA02) campanha WhatsApp — LINK_CLICKS",
+      "name_observed": "DTS (CA02) WhatsApp — LINK_CLICKS",
       "validation": "destino_conferido",
-      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "doctor_basis": "CONFIRMADO Dra. Taísa em 25/11/2026: nomenclatura DTS e destino WHATSAPP (verificação direta).",
       "note": "Destino WHATSAPP com optimization_goal LINK_CLICKS (conferido via API em 25/11/2026): o gasto entra no WhatsApp, mas o resultado continua sendo SOMENTE messaging_conversation_started_7d — cliques nunca contam como resultado. Por isso o “Resultado” da UI da Meta (cliques) difere do dashboard."
     },
     "120251418123510262": {
       "account_id": "1530307658790959",
       "doctor": "taisa",
       "funnel": "whatsapp",
-      "name_observed": "(CA02) campanha WhatsApp — CONVERSATIONS",
+      "name_observed": "DTS (CA02) WhatsApp — CONVERSATIONS",
       "validation": "destino_conferido",
-      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "doctor_basis": "CONFIRMADO Dra. Taísa em 25/11/2026: nomenclatura DTS e destino WHATSAPP (verificação direta).",
       "note": "Destino WHATSAPP, optimization_goal CONVERSATIONS (conferido via API em 25/11/2026)."
     },
     "120242435400470317": {

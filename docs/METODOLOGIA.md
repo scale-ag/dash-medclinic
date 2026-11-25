@@ -118,7 +118,7 @@ Para cada conjunto (e, portanto, para cada linha), a categoria é definida assim
 - **Nada é contado em dobro.** A conciliação da Geral distribui 100% do gasto entre as categorias e
   confere a soma dos anúncios contra o total da conta (`level=account`), com tolerância configurável.
 
-### Mapa atual (versão `2026-11-25-r3`)
+### Mapa atual (versão `2026-11-25-r4`)
 
 | Conta | campaign_id | Observado | Médico | Funil | Validação |
 |---|---|---|---|---|---|
@@ -143,8 +143,8 @@ Notas da tabela:
 - **CA01, WhatsApp:** em 25/11/2026 a API confirmou que todos os conjuntos das 5 campanhas têm
   `destination_type` WHATSAPP, `optimization_goal` CONVERSATIONS e atribuição de clique 7 dias. As 4
   campanhas da CA02 também têm destino WHATSAPP.
-- **¹ Médico pela conta:** atribuído pela conta CA02 (Dra. Taísa), conforme `doctor_basis` no mapa.
-  Confirmar pelo nome ou criativo na validação local.
+- **¹ Médico confirmado:** Dra. Taísa, confirmada em 25/11/2026 por verificação direta (nomenclatura
+  DTS e destino WHATSAPP).
 - **² Otimização LINK_CLICKS:** o gasto entra no WhatsApp porque o destino é WHATSAPP. O resultado
   continua sendo **somente** `messaging_conversation_started_7d`; cliques nunca contam como resultado.
   Por isso o “Resultado” da UI da Meta (cliques) difere do dashboard.
