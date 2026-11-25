@@ -51,6 +51,11 @@ export function sumRows(rows) {
 
 /** Fator de imposto a partir da fração líquida configurada (ex.: 0.8785 => 1/0.8785). */
 export function taxFactorFromConfig(tax) {
+  if (tax?.factor !== undefined) {
+    const factor = tax.factor;
+    if (!Number.isFinite(factor) || factor < 1) throw new Error('tax.factor deve ser maior ou igual a 1');
+    return factor;
+  }
   const share = Number(tax?.net_share);
   if (!Number.isFinite(share) || share <= 0 || share > 1) {
     throw new Error('tax.net_share deve estar em (0, 1]');
