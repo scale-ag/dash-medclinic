@@ -31,7 +31,7 @@ await mkdir(values.out, { recursive: true });
 const base = `http://127.0.0.1:${values.port}/dash-medclinic/`;
 const views = ['geral', 'whatsapp-taisa', 'whatsapp-ailton', 'seguidores-ailton', 'seguidores-taisa'];
 const problems = [];
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.CHROME_CHANNEL ? { channel: process.env.CHROME_CHANNEL } : {});
 try {
   for (const [device, viewport] of [['desktop', { width: 1366, height: 900 }], ['mobile', { width: 390, height: 844 }]]) {
     for (const scheme of ['light', 'dark']) {
@@ -68,20 +68,22 @@ try {
   check(page.url().includes(`c=${firstCampaign}`), 'filtro não é compartilhado entre abas');
   await page.getByRole('button', { name: 'Remover Filtros' }).click();
   check(!page.url().includes('c='), 'limpar filtros não removeu a campanha');
-  await page.locator('.topbar .period select').selectOption('custom');
-  const today = await page.evaluate(() => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date()));
-  await page.locator('.topbar .period input[type=date]').nth(1).fill(today);
-  await page.locator('.topbar .period input[type=date]').nth(1).dispatchEvent('change');
+  await page.locator('.period-trigger').click();
+  await page.getByRole('dialog').getByRole('button', {name:'Hoje',exact:true}).click();
+  await page.locator('.period-trigger').click();
+  await page.getByRole('button',{name:'Aplicar',exact:true}).click();
   check(await page.locator('.range-text .badge', { hasText: 'parcial' }).count() === 1, 'período com hoje não foi marcado como parcial');
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Exportar CSV' }).click()]);
   const csv = await (await import('node:fs/promises')).readFile(await download.path(), 'utf8');
   check(csv.startsWith('\uFEFFdata;conta;medico;'), 'CSV sem BOM/cabeçalho esperado');
   check(download.suggestedFilename().includes('SINTETICO'), 'CSV sintético sem marcação no nome');
-  const before = await page.locator('table.tree tbody tr').count();
-  await page.locator('table.tree .tree-toggle').first().click();
-  check((await page.locator('table.tree tbody tr').count()) > before, 'drill-down não expandiu');
-  await page.locator('table.tree thead button', { hasText: 'Impressões' }).click();
-  check((await page.locator('table.tree thead th[aria-sort="descending"]').count()) === 1, 'ordenação não aplicada');
+  await page.getByRole('button', {name:'Remover Filtros'}).click();
+  const campaignTable = page.locator('[data-level="campaign"]');
+  check(await page.locator('.table-chart-pair').count() === 3, 'três níveis da hierarquia');
+  await campaignTable.locator('tbody tr').first().click();
+  check(new URL(page.url()).hash.includes('c='), 'seleção de campanha');
+  await campaignTable.getByRole('button', { name:'Impr.' }).click();
+  check(await campaignTable.locator('thead th[aria-sort=descending]').count() === 1, 'ordenação da tabela');
   const heroBefore = await page.locator('.step.hl-gasto .m-val').first().textContent();
   await page.getByRole('switch', { name: /Imposto Meta/ }).click();
   const heroAfter = await page.locator('.step.hl-gasto .m-val').first().textContent();
