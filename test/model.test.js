@@ -33,8 +33,8 @@ test('filtros campanha -> conjunto -> anúncio em cascata', () => {
   const sid = o2.adsets[0].id;
   const rows = filterRows(scoped, { range, campaignId: cid, adsetId: sid });
   assert.ok(rows.length > 0 && rows.every((r) => r.adset_id === sid));
-  // Conjunto misto da mesma campanha não está na visão WhatsApp.
-  assert.ok(!o2.adsets.some((s) => s.id === '910000000000000302'));
+  // Campanhas fora do mapa nunca aparecem como opção da visão do médico.
+  assert.ok(!opts.campaigns.some((c) => c.id.startsWith('9000')));
 });
 
 test('série diária cobre todos os dias, marca hoje como parcial e soma igual ao total', () => {
@@ -61,13 +61,19 @@ test('conciliação: categorias somam o total, sem dupla contagem; WhatsApp por 
     assert.equal(rec.byDoctor[d].whatsapp.conversations, tab.conversations);
   }
   assert.ok(rec.pending.some((p) => p.category === CATEGORY.NAO_CLASSIFICADO && p.suggestion === 'possível WhatsApp'));
-  assert.ok(rec.pending.some((p) => p.category === CATEGORY.NAO_CONCILIADO && p.destination_type === 'MESSENGER'));
+  assert.ok(rec.pending.some((p) => p.category === CATEGORY.NAO_CLASSIFICADO && p.suggestion === 'destino misto'));
   assert.equal(rec.excluded.length, 4);
   const ca01 = rec.accountCheck.find((a) => a.label === 'CA01');
   assert.equal(ca01.diff_cents, 37, 'diferença conta x anúncios exposta');
-  const outside = doctorOutsideCost(model, 'taisa', range);
-  assert.ok(outside.byCategory[CATEGORY.EXCLUIDO].spend_cents > 0);
-  assert.ok(outside.byCategory[CATEGORY.NAO_CONCILIADO].spend_cents > 0);
+  assert.ok(doctorOutsideCost(model, 'taisa', range).byCategory[CATEGORY.EXCLUIDO].spend_cents > 0);
+  // Se a campanha de destino misto fosse mapeada para a Taísa, ficaria NÃO CONCILIADA e fora do CPL.
+  const map2 = structuredClone(MAP);
+  map2.campaigns['900000000000000002'] = { account_id: '1530307658790959', doctor: 'taisa', funnel: 'whatsapp', validation: 'pendente' };
+  const m2 = buildModel(snap, map2);
+  const rec2 = reconciliation(m2, filterRows(m2.rows, { range }), range);
+  assert.ok(rec2.pending.some((p) => p.category === CATEGORY.NAO_CONCILIADO && p.destination_type === 'MESSAGING_INSTAGRAM_DIRECT_WHATSAPP'));
+  assert.ok(doctorOutsideCost(m2, 'taisa', range).byCategory[CATEGORY.NAO_CONCILIADO].spend_cents > 0);
+  assert.equal(rec2.byDoctor.taisa.whatsapp.spend_cents, rec.byDoctor.taisa.whatsapp.spend_cents, 'CPL da Taísa não muda');
 });
 
 test('árvore de drill-down soma igual às linhas em todos os níveis', () => {

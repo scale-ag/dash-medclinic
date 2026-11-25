@@ -1,6 +1,6 @@
 {
-  "$comment": "Mapa EXPLÍCITO campaign_id -> médico -> funil. A conta e o prefixo do nome (ENGJ/TRAF/DTS/DAT) NÃO determinam a classificação. Campanhas fora deste mapa ficam como 'não classificadas' e não entram em nenhum custo. Funis 'whatsapp' e 'seguidores' são conferidos por conjunto contra destination_type; divergentes ou mistos ficam 'não conciliados' e fora do custo.",
-  "version": "2026-11-25-inicial",
+  "$comment": "Mapa EXPLÍCITO campaign_id -> médico -> funil. A conta e o prefixo do nome (ENGJ/TRAF/DTS/DAT) NÃO determinam a classificação. Campanhas fora deste mapa ficam como 'não classificadas' e não entram em nenhum custo. Funis 'whatsapp' e 'seguidores' são conferidos por conjunto contra destination_type; divergentes ou mistos ficam 'não conciliados' e fora do custo. Campanha MISTA POR MÉDICO: doctor=null + doctor_scope='adset' + adsets{<adset_id>: {doctor, note}}; conjunto com doctor=null (a confirmar) ou ausente do mapa fica fora de qualquer custo. Conciliação manual de destino por conjunto: adsets{<adset_id>: {accept_destination_type, note}}. validation: pendente | destino_conferido (destino/otimização conferidos via API; resultados ainda a comparar com a UI) | conferido (comparado com a UI).",
+  "version": "2026-11-25-r2",
   "doctors": {
     "ailton": {
       "label": "Dr. Ailton",
@@ -16,13 +16,17 @@
       "label": "WhatsApp",
       "result": "conversations",
       "result_label": "Conversas iniciadas no WhatsApp",
-      "expected_destination_types": ["WHATSAPP"]
+      "expected_destination_types": [
+        "WHATSAPP"
+      ]
     },
     "seguidores": {
       "label": "Seguidores",
       "result": "follows",
       "result_label": "Seguidores no Instagram",
-      "expected_destination_types": ["INSTAGRAM_PROFILE"]
+      "expected_destination_types": [
+        "INSTAGRAM_PROFILE"
+      ]
     },
     "excluido": {
       "label": "Fora da captação",
@@ -35,40 +39,40 @@
       "doctor": "taisa",
       "funnel": "whatsapp",
       "name_observed": "[WhatsApp][Taísa]",
-      "validation": "pendente",
-      "note": "Histórico da Taísa na CA01. Destino ainda a validar (esperado WHATSAPP)."
+      "validation": "destino_conferido",
+      "note": "Conferido via API em 25/11/2026: todos os conjuntos com destination_type WHATSAPP, optimization_goal CONVERSATIONS, atribuição clique 7 dias. Histórico da Taísa na CA01."
     },
     "120243388359980317": {
       "account_id": "203811442663021",
       "doctor": "ailton",
       "funnel": "whatsapp",
       "name_observed": "[WhatsApp][Ailton]",
-      "validation": "pendente",
-      "note": "Destino ainda a validar (esperado WHATSAPP)."
+      "validation": "destino_conferido",
+      "note": "Conferido via API em 25/11/2026: todos os conjuntos com destination_type WHATSAPP, optimization_goal CONVERSATIONS, atribuição clique 7 dias."
     },
     "120248339618150317": {
       "account_id": "203811442663021",
       "doctor": "taisa",
       "funnel": "whatsapp",
       "name_observed": "DTS Ads tricologia",
-      "validation": "pendente",
-      "note": "Histórico da Taísa na CA01 (tricologia). Destino ainda a validar (esperado WHATSAPP)."
+      "validation": "destino_conferido",
+      "note": "Conferido via API em 25/11/2026: todos os conjuntos com destination_type WHATSAPP, optimization_goal CONVERSATIONS, atribuição clique 7 dias. Histórico da Taísa na CA01."
     },
     "120248374076630317": {
       "account_id": "203811442663021",
       "doctor": "ailton",
       "funnel": "whatsapp",
       "name_observed": "DAT WPP Top Ads",
-      "validation": "pendente",
-      "note": "Destino ainda a validar (esperado WHATSAPP)."
+      "validation": "destino_conferido",
+      "note": "Conferido via API em 25/11/2026: todos os conjuntos com destination_type WHATSAPP, optimization_goal CONVERSATIONS, atribuição clique 7 dias."
     },
     "120248471528140317": {
       "account_id": "203811442663021",
       "doctor": "ailton",
       "funnel": "whatsapp",
       "name_observed": "DAT WPP Teste de Ads",
-      "validation": "pendente",
-      "note": "Destino ainda a validar (esperado WHATSAPP)."
+      "validation": "destino_conferido",
+      "note": "Conferido via API em 25/11/2026: todos os conjuntos com destination_type WHATSAPP, optimization_goal CONVERSATIONS, atribuição clique 7 dias."
     },
     "120246982288180317": {
       "account_id": "203811442663021",
@@ -107,11 +111,62 @@
       "doctor": "taisa",
       "funnel": "whatsapp",
       "name_observed": "DTS ENGJ ABO Teste de Ads",
+      "validation": "destino_conferido",
+      "note": "Objetivo de engajamento; conjuntos com destination_type WHATSAPP (conferido via API em 25/11/2026)."
+    },
+    "120251528556640262": {
+      "account_id": "1530307658790959",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "(CA02) campanha WhatsApp — CONVERSATIONS",
+      "validation": "destino_conferido",
+      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "note": "Destino WHATSAPP, optimization_goal CONVERSATIONS (conferido via API em 25/11/2026)."
+    },
+    "120251521306570262": {
+      "account_id": "1530307658790959",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "(CA02) campanha WhatsApp — LINK_CLICKS",
+      "validation": "destino_conferido",
+      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "note": "Destino WHATSAPP com optimization_goal LINK_CLICKS (conferido via API em 25/11/2026): o gasto entra no WhatsApp, mas o resultado continua sendo SOMENTE messaging_conversation_started_7d — cliques nunca contam como resultado. Por isso o “Resultado” da UI da Meta (cliques) difere do dashboard."
+    },
+    "120251418123510262": {
+      "account_id": "1530307658790959",
+      "doctor": "taisa",
+      "funnel": "whatsapp",
+      "name_observed": "(CA02) campanha WhatsApp — CONVERSATIONS",
+      "validation": "destino_conferido",
+      "doctor_basis": "Conta CA02 (Dra. Taísa); médico a confirmar pelo nome/criativo na validação local.",
+      "note": "Destino WHATSAPP, optimization_goal CONVERSATIONS (conferido via API em 25/11/2026)."
+    },
+    "120242435400470317": {
+      "account_id": "203811442663021",
+      "doctor": "taisa",
+      "funnel": "seguidores",
+      "name_observed": "[Tráfego][Taísa] Seguidores Instagram",
+      "validation": "destino_conferido",
+      "note": "Campanha exclusiva de seguidores, HISTÓRICA e PAUSADA, sem gasto em 01–24/11/2026. Conjuntos 120243833203900317 e 120242435400480317 com destination_type INSTAGRAM_PROFILE."
+    },
+    "120236975999600317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "ENGAJAMENTO|NOVOS SEGUIDORES|DRS",
       "validation": "pendente",
-      "note": "Objetivo de engajamento; só conta se o conjunto tiver destination_type WHATSAPP."
+      "note": "Campanha MISTA POR MÉDICO, histórica, sem gasto em 01–24/11/2026. O médico é definido por conjunto; a campanha inteira nunca é atribuída a um médico.",
+      "adsets": {
+        "120236975999730317": {
+          "doctor": "taisa",
+          "note": "NOVOS SEGUIDORES|DRA TAÍSA"
+        },
+        "120236995354460317": {
+          "doctor": null,
+          "note": "NOVOS SEGUIDORES|DR — médico a confirmar; fora de qualquer custo até a confirmação"
+        }
+      }
     }
-  },
-  "adset_overrides": {
-    "$comment": "Conciliação manual por conjunto (opcional), após conferência na UI da Meta. Formato: \"<adset_id>\": { \"doctor\": \"taisa\", \"funnel\": \"whatsapp\", \"accept_destination_type\": \"<DESTINO>\", \"note\": \"conferido em DD/MM/AAAA\" }. Nenhum override existe hoje."
   }
 }

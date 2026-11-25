@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const { values } = parseArgs({ options: { dir: { type: 'string', default: '.work/dist-synthetic' }, port: { type: 'string', default: '8791' }, out: { type: 'string', default: '.work/screenshots' } } });
 let chromium;
@@ -23,10 +24,11 @@ if (!chromium) {
   process.exit(2);
 }
 
-const server = spawn(process.execPath, ['scripts/serve.mjs', '--dir', values.dir, '--port', values.port], { stdio: ['ignore', 'pipe', 'inherit'] });
+const serveScript = fileURLToPath(new URL('./serve.mjs', import.meta.url)); // compatível com Windows (sem URL.pathname)
+const server = spawn(process.execPath, [serveScript, '--dir', values.dir, '--port', values.port], { stdio: ['ignore', 'pipe', 'inherit'] });
 await new Promise((r) => server.stdout.once('data', r));
 await mkdir(values.out, { recursive: true });
-const base = `http://localhost:${values.port}/dash-medclinic/`;
+const base = `http://127.0.0.1:${values.port}/dash-medclinic/`;
 const views = ['geral', 'whatsapp-taisa', 'whatsapp-ailton', 'seguidores-ailton', 'seguidores-taisa'];
 const problems = [];
 const browser = await chromium.launch();

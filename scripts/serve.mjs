@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Servidor estático local para preview em http://localhost:PORT/dash-medclinic/ (mesmo base path do Pages).
+// Servidor estático local para preview em http://127.0.0.1:PORT/dash-medclinic/ (mesmo base path do Pages).
+// Escuta SOMENTE em 127.0.0.1: a prévia com dados reais nunca fica exposta na rede local.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -12,7 +13,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 
 createServer(async (req, res) => {
   try {
-    const url = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://127.0.0.1');
     if (url.pathname === '/' || url.pathname === '/dash-medclinic') {
       res.writeHead(302, { Location: BASE });
       return res.end();
@@ -36,4 +37,4 @@ createServer(async (req, res) => {
     res.writeHead(404);
     res.end('not found');
   }
-}).listen(Number(values.port), () => console.log(`preview: http://localhost:${values.port}${BASE} (servindo ${ROOT})`));
+}).listen(Number(values.port), '127.0.0.1', () => console.log(`preview: http://127.0.0.1:${values.port}${BASE} (servindo ${ROOT}; acessível só nesta máquina)`));

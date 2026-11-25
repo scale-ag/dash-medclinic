@@ -6,7 +6,7 @@
   "meta_api_version": "v25.0",
   "insights": {
     "use_unified_attribution_setting": true,
-    "action_report_time": null,
+    "action_report_time": "impression",
     "conversation_action_type": "onsite_conversion.messaging_conversation_started_7d",
     "follow_field": "instagram_profile_follow",
     "page_limit": 500,
@@ -23,7 +23,8 @@
       "DISAPPROVED",
       "PREAPPROVED",
       "PENDING_BILLING_INFO"
-    ]
+    ],
+    "$comment": "action_report_time=impression: regra usada na conciliação API x UI (25/11/2026). use_unified_attribution_setting=true: atribuição de cada conjunto."
   },
   "reconciliation": {
     "$comment": "Diferença tolerada entre o gasto da conta (level=account) e a soma dos anúncios coletados no período inteiro.",

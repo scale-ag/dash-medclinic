@@ -5,15 +5,16 @@ import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import { accountReconciliation, scanForSecrets } from '../src/node/checks.js';
 import { validateSnapshot, evaluateBase } from '../src/node/snapshot.js';
 import { makeSyntheticSnapshot } from './fixtures/synthetic.js';
 import { FAKE_TOKEN } from './helpers/fake-meta.js';
 
 const run = promisify(execFile);
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url)); // compatível com Windows (URL.pathname gera C:\\C:\\)
 
 async function node(args, env = {}) {
   try {
@@ -47,7 +48,7 @@ test('build de produção recusa snapshot sintético; validação de produção 
 test('site montado não contém credenciais nem acesso à API; caminhos relativos ao base path', async () => {
   const { out } = await syntheticDist();
   assert.deepEqual(await scanForSecrets(out, { exactSecrets: [FAKE_TOKEN] }), []);
-  const files = await readdir(out, { recursive: true });
+  const files = (await readdir(out, { recursive: true })).map((f) => f.split(sep).join('/')); // separador '/' também no Windows
   for (const f of files.filter((x) => /\.(js|html|json|css)$/.test(x))) {
     const text = await readFile(join(out, f), 'utf8');
     assert.ok(!/graph\.facebook\.com|META_ACCESS_TOKEN|Authorization/.test(text), `${f} não deve falar com a API nem citar credenciais`);

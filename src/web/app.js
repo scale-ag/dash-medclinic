@@ -18,6 +18,8 @@ import {
   reconciliation,
   doctorOutsideCost,
   coverageSummary,
+  identifiedCampaigns,
+  pendingDoctorAdsets,
 } from './shared/model.js';
 import { sumRows, deriveMetrics, taxFactorFromConfig, spendBRL, ratio, emptyTotals, addRowInto } from './shared/metrics.js';
 import { CATEGORY, CATEGORY_LABELS } from './shared/classify.js';
@@ -467,7 +469,7 @@ function treeSection(view, rows, { overview = false } = {}) {
         { class: 'cell-name' },
         h('span', { class: 'name-text', title: n.id }, n.name),
         n.level === 'campaign' ? h('span', { class: 'meta' }, `${n.account_label} · ${n.id}`) : null,
-        n.level === 'adset' ? h('span', { class: 'meta' }, `${n.destination_type || 'destino desconhecido'} · ${n.id}`) : null,
+        n.level === 'adset' ? h('span', { class: 'meta' }, `${n.destination_type || 'destino desconhecido'}${n.optimization_goal ? ` · ${n.optimization_goal}` : ''} · ${n.id}`) : null,
         n.level === 'ad' ? h('span', { class: 'meta' }, n.id) : null,
       ),
   };
@@ -522,6 +524,15 @@ function renderFunnel(main, view, range) {
       h('p', null, `${doctor.specialty} · ${view.category === 'whatsapp' ? 'Resultado = conversas iniciadas no WhatsApp (não são pacientes, agendamentos nem consultas).' : 'Resultado = seguidores do Instagram vindos de campanhas EXCLUSIVAS de seguidores.'}`),
     ),
   );
+  const pendingDoctor = pendingDoctorAdsets(app.model, view);
+  const pendingDoctorNotice = pendingDoctor.length
+    ? notice(
+        'warn',
+        `${pendingDoctor.length} conjunto(s) de ${view.category === 'seguidores' ? 'seguidores' : 'WhatsApp'} em campanha mista por médico aguardam confirmação do médico e não contam para nenhum médico: `,
+        pendingDoctor.map((p, i) => [i ? '; ' : '', h('strong', null, p.adset_name), ` (${p.adset_id}, campanha ${p.campaign_name})`]),
+        '.',
+      )
+    : null;
   if (!mapped.length) {
     main.append(
       h(
@@ -532,18 +543,34 @@ function renderFunnel(main, view, range) {
           'p',
           null,
           view.category === 'seguidores'
-            ? `Até o momento nenhuma campanha exclusiva de seguidores foi confirmada para ${doctor.label}. Seguidores incidentais gerados por campanhas de WhatsApp não são contados aqui.`
+            ? `Nenhuma campanha (ou conjunto, em campanha mista) exclusiva de seguidores está confirmada para ${doctor.label}. Seguidores orgânicos ou incidentais de campanhas de WhatsApp não são contados aqui.`
             : `Nenhuma campanha de WhatsApp foi mapeada para ${doctor.label}.`,
         ),
-        h('p', null, 'Quando houver campanha confirmada, adicione o campaign_id em config/campaign-map.json com o funil “seguidores” e o médico correspondente. O conjunto precisa ter destination_type INSTAGRAM_PROFILE (configurável) para entrar no custo.'),
+        h('p', null, 'Quando houver campanha confirmada, adicione o campaign_id em config/campaign-map.json com o funil e o médico (ou o médico por conjunto, em campanha mista). O conjunto precisa ter o destination_type esperado para entrar no custo.'),
       ),
     );
+    if (pendingDoctorNotice) main.append(pendingDoctorNotice);
     return;
   }
   coverageNotices(range).forEach((n) => main.append(n));
+  if (pendingDoctorNotice) main.append(pendingDoctorNotice);
   const rows = filterRows(viewRows(app.model, view), filters(range));
   const totals = sumRows(rows);
   const m = deriveMetrics(totals, { taxEnabled: state.tax, taxFactor: app.taxFactor, result: view.result });
+  const identified = range.empty ? [] : identifiedCampaigns(app.model, view, range);
+  const idle = identified.filter((c) => !c.delivered);
+  const entityFilter = Boolean(state.campaignId || state.adsetId || state.adId);
+  if (!range.empty && rows.length === 0 && !entityFilter) {
+    main.append(
+      notice(
+        'info',
+        h('strong', null, `${identified.length} campanha(s) de ${view.category === 'seguidores' ? 'seguidores' : 'WhatsApp'} identificada(s) para ${doctor.label}, sem veiculação no período selecionado.`),
+        ' Não é ausência de campanha: o investimento e os resultados do período são zero confirmado nos dias coletados.',
+      ),
+      identifiedSection(identified, 'Campanhas identificadas'),
+    );
+    return;
+  }
   const outside = doctorOutsideCost(app.model, view.doctor, range);
   main.append(
     h(
@@ -594,6 +621,41 @@ function renderFunnel(main, view, range) {
     ),
   );
   main.append(dailyTableFunnel(view, points), treeSection(view, rows));
+  if (idle.length && !entityFilter) main.append(identifiedSection(idle, 'Campanhas identificadas sem veiculação no período'));
+}
+
+function identifiedSection(list, title) {
+  const statusText = (c) => (c.effective_status ? c.effective_status : c.discovered ? 'status não informado' : 'não retornada pela descoberta da conta');
+  return section(
+    title,
+    'Campanhas do mapa explícito para esta visão. Em campanha mista por médico, apenas os conjuntos atribuídos a este médico.',
+    sortableTable({
+      caption: title,
+      sort: { key: 'name', dir: 'asc' },
+      onSort: () => {},
+      items: list,
+      columns: [
+        { key: 'name', label: 'Campanha', cell: (c) => h('span', { class: 'cell-name' }, h('span', { class: 'name-text' }, c.name), h('span', { class: 'meta' }, `${c.account_label} · ${c.id}${c.doctor_scope === 'adset' ? ' · mista por médico' : ''}`)) },
+        { key: 'status', label: 'Status', cell: (c) => statusText(c) },
+        {
+          key: 'adsets',
+          label: 'Conjuntos deste médico',
+          cell: (c) =>
+            c.adsets.length
+              ? h('span', { class: 'cell-name' }, c.adsets.map((a) => h('span', { class: 'meta' }, `${a.name} · ${a.destination_type || 'destino ?'}${a.optimization_goal ? ` · ${a.optimization_goal}` : ''} · ${a.id}`)))
+              : h('span', { class: 'muted' }, 'nenhum conjunto descoberto'),
+        },
+        { key: 'validation', label: 'Validação', cell: (c) => validationBadge(c.validation) },
+        { key: 'spend', label: spendLabel(), num: true, cell: (c) => fmtBRL(spendOf(c.totals.spend_cents)) },
+      ],
+    }),
+  );
+}
+
+function validationBadge(v) {
+  const map = { pendente: ['warn', 'a validar'], destino_conferido: ['muted', 'destino conferido (API)'], conferido: ['ok', 'conferido com a UI'] };
+  const [tone, label] = map[v] || map.pendente;
+  return h('span', { class: `badge badge-${tone}` }, label);
 }
 
 function dailyTableFunnel(view, points) {
@@ -775,7 +837,7 @@ function reconciliationSection(rec, total) {
     { key: 'adset', label: 'Conjunto', sortValue: (p) => p.adset_name, cell: (p) => h('span', { class: 'cell-name' }, h('span', { class: 'name-text' }, p.adset_name), h('span', { class: 'meta' }, p.adset_id)) },
     { key: 'dest', label: 'Destino', sortValue: (p) => p.destination_type, cell: (p) => p.destination_type || 'desconhecido' },
     { key: 'status', label: 'Situação', sortValue: (p) => p.category, cell: (p) => h('span', null, categoryBadge(p.category), h('span', { class: 'meta' }, p.reason)) },
-    { key: 'hint', label: 'Médico / sugestão', sortValue: (p) => p.suggestion || p.doctor, cell: (p) => (p.doctor ? doctors[p.doctor]?.label : p.suggestion ? `${p.suggestion} (não aplicada)` : '') },
+    { key: 'hint', label: 'Médico / sugestão', sortValue: (p) => p.suggestion || p.doctor, cell: (p) => (p.doctor ? doctors[p.doctor]?.label : p.doctor_pending ? 'médico a confirmar (conjunto)' : p.suggestion ? `${p.suggestion} (não aplicada)` : '') },
     { key: 'spend', label: state.tax ? 'Invest. (c/ imposto est.)' : 'Invest. (bruto)', num: true, sortValue: (p) => p.totals.spend_cents, cell: (p) => fmtBRL(spendOf(p.totals.spend_cents)) },
   ];
   return section(
@@ -835,7 +897,8 @@ function methodologySection() {
   const snap = app.snapshot;
   const api = snap.api || {};
   const map = app.config.campaign_map;
-  const pendingValidation = Object.entries(map.campaigns).filter(([id, e]) => !id.startsWith('$') && e.validation === 'pendente').length;
+  const states = { pendente: 0, destino_conferido: 0, conferido: 0 };
+  for (const [id, e] of Object.entries(map.campaigns)) if (!id.startsWith('$')) states[e.validation || 'pendente'] = (states[e.validation || 'pendente'] || 0) + 1;
   const effective = api.effective_versions || [];
   const versionMismatch = effective.length && !effective.includes(api.requested_version);
   const f = freshness();
@@ -863,7 +926,7 @@ function methodologySection() {
       item('Seguidores', `campo ${api.follow_field}, somente campanhas mapeadas como seguidores com destino conciliado. Seguidores incidentais de campanhas de WhatsApp não contam.`),
       item('Imposto Meta', `${app.config.tax.label}: bruto × 1/${String(app.config.tax.net_share).replace('.', ',')} ≈ ${fmtDec(app.taxFactor, 9)} — aplicado uma única vez sobre o bruto; ${state.tax ? 'ligado' : 'desligado'} agora. Pendente de confirmação fiscal.`),
       item('Custos', 'Razão dos totais do período (não média de custos diários). Denominador zero = não calculável (—).'),
-      item('Mapa de classificação', `versão ${map.version} · ${Object.keys(map.campaigns).filter((k) => !k.startsWith('$')).length} campanhas mapeadas · ${pendingValidation} com validação pendente na UI da Meta`),
+      item('Mapa de classificação', `versão ${map.version} · ${Object.keys(map.campaigns).filter((k) => !k.startsWith('$')).length} campanhas mapeadas · ${states.conferido} conferidas com a UI · ${states.destino_conferido} com destino conferido via API (resultados a comparar com a UI) · ${states.pendente} a validar`),
       item('Alcance/frequência', 'Não exibidos: alcance não pode ser somado entre dias/anúncios e não é inventado.'),
       item('Build', `${formatDateTimeBR(app.config.build?.built_at)}${app.config.build?.commit ? ` · commit ${app.config.build.commit.slice(0, 7)}` : ''}`),
     ),

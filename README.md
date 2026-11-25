@@ -20,7 +20,7 @@ Não há Google, CRM, planilhas de leads, ROAS nem faturamento.
 |---|---|
 | Geral | Investimento total e por categoria: WhatsApp, Seguidores, Fora da captação e Pendente. Comparativo entre médicos, cada custo com o próprio denominador. Conciliação: categorias, conferência com o total da conta e lista de pendências. Seção de coleta e metodologia. |
 | WhatsApp Taísa / WhatsApp Ailton | Investimento, conversas iniciadas, custo por conversa, impressões, cliques no link, CTR, CPC e CPM. Gráficos diários de gasto, resultado e custo. Tabela diária. Drill-down campanha → conjunto → anúncio. |
-| Seguidores Ailton / Seguidores Taísa | Hoje mostram o estado honesto *“Nenhuma campanha de seguidores identificada”*. A visão é ativada pelo mapa de campanhas. |
+| Seguidores Ailton / Seguidores Taísa | Mostram somente campanhas (ou conjuntos de campanhas mistas por médico) exclusivas de seguidores. Distinguem “campanha identificada sem veiculação no período” de “nenhuma campanha identificada”. Conjuntos com médico a confirmar não contam para ninguém. |
 
 Os filtros (período, campanha, conjunto e anúncio) valem para todas as abas.
 
@@ -70,8 +70,8 @@ Testes automatizados: sem rede, sem secrets, só com dados sintéticos isolados.
 npm test
 ```
 
-Preview local com dados **SINTÉTICOS**, servido em http://localhost:8787/dash-medclinic/. A página mostra
-a faixa “DADOS SINTÉTICOS”.
+Preview local com dados **SINTÉTICOS**, servido em http://127.0.0.1:8787/dash-medclinic/. O servidor escuta só
+em 127.0.0.1, então a prévia não fica exposta na rede local. A página mostra a faixa “DADOS SINTÉTICOS”.
 
 ```bash
 npm run preview:synthetic

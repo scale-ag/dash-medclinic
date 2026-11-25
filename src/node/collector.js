@@ -219,22 +219,17 @@ export async function collectAccount({ client, account, cfg, range, expected, no
   // e confirma que pertencem à MESMA conta antes de aceitar.
   const missingCampaigns = [...new Set(rows.map((r) => r.campaign_id))].filter((cid) => !campaigns[cid]);
   const missingAdsets = [...new Set(rows.map((r) => r.adset_id))].filter((sid) => !adsets[sid]);
-  if (missingCampaigns.length) {
-    const got = await client.getByIds(missingCampaigns, `${CAMPAIGN_FIELDS},account_id`);
-    for (const cid of missingCampaigns) {
-      const c = got[cid];
-      if (c && String(c.account_id) !== id) throw new CollectionError(`Campanha ${cid} pertence a outra conta`);
-      campaigns[cid] = c ? pickCampaign(c, id) : { account_id: id, name: campaignNames.get(cid) || cid, objective: null, status: null, effective_status: null, buying_type: null };
-    }
+  // Leitura individual GET /<id> — apenas IDs vindos do insights DESTA conta; account_id conferido.
+  for (const cid of missingCampaigns) {
+    const c = await client.getObject(cid, `${CAMPAIGN_FIELDS},account_id`);
+    if (c && String(c.account_id) !== id) throw new CollectionError(`Campanha ${cid} pertence a outra conta`);
+    campaigns[cid] = c ? pickCampaign(c, id) : { account_id: id, name: campaignNames.get(cid) || cid, objective: null, status: null, effective_status: null, buying_type: null };
   }
-  if (missingAdsets.length) {
-    const got = await client.getByIds(missingAdsets, `${ADSET_FIELDS},account_id`);
-    for (const sid of missingAdsets) {
-      const s = got[sid];
-      if (s && String(s.account_id) !== id) throw new CollectionError(`Conjunto ${sid} pertence a outra conta`);
-      // Sem metadados => destination_type null => classificação "não conciliado" (nunca entra no custo).
-      adsets[sid] = s ? pickAdset(s, id) : { ...pickAdset({ name: adsetNames.get(sid) || sid }, id), campaign_id: rows.find((r) => r.adset_id === sid)?.campaign_id || '' };
-    }
+  for (const sid of missingAdsets) {
+    const s = await client.getObject(sid, `${ADSET_FIELDS},account_id`);
+    if (s && String(s.account_id) !== id) throw new CollectionError(`Conjunto ${sid} pertence a outra conta`);
+    // Sem metadados => destination_type null => classificação "não conciliado" (nunca entra no custo).
+    adsets[sid] = s ? pickAdset(s, id) : { ...pickAdset({ name: adsetNames.get(sid) || sid }, id), campaign_id: rows.find((r) => r.adset_id === sid)?.campaign_id || '' };
   }
   for (const [cid, n] of campaignNames) if (campaigns[cid] && !campaigns[cid].name) campaigns[cid].name = n;
   for (const [sid, n] of adsetNames) if (adsets[sid] && !adsets[sid].name) adsets[sid].name = n;

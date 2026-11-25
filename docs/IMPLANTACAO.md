@@ -39,7 +39,8 @@ Validação:
 npm run validate -- --dist dist
 ```
 
-Abra o preview em http://localhost:8787/dash-medclinic/ e compare com o Gerenciador de Anúncios:
+Abra o preview em http://127.0.0.1:8787/dash-medclinic/ e compare com o Gerenciador de Anúncios. O
+servidor escuta só em 127.0.0.1:
 
 ```bash
 npm run preview
@@ -56,21 +57,26 @@ Mesmo período, mesma atribuição do conjunto, fuso de São Paulo.
 
 - [ ] Gasto bruto por conta: a seção “Conferência com o total da conta” tem que bater com o
       Gerenciador.
-- [ ] O `destination_type` de cada conjunto das campanhas mapeadas é `WHATSAPP`. Se algum vier misto ou
-      divergente, ele aparece em “Pendências”.
+- [x] O `destination_type` dos conjuntos das 5 campanhas WhatsApp da CA01 e das 4 da CA02 é `WHATSAPP`
+      (conferido via API em 25/11/2026). Qualquer conjunto misto ou divergente que surgir aparece em
+      “Pendências”.
 - [ ] As conversas de cada campanha WhatsApp batem com a coluna **“Conversas por mensagem iniciadas”**
       da UI (`onsite_conversion.messaging_conversation_started_7d`).
-- [ ] As 3 campanhas da CA02 que estão fora do mapa (incluindo as duas “TRAF 25/11”) foram classificadas
-      pelo destino real e adicionadas a `config/campaign-map.json`.
+- [x] As 3 campanhas adicionais da CA02 (120251528556640262, 120251521306570262 e 120251418123510262)
+      foram mapeadas como WhatsApp.
+- [ ] Confirmar que o médico dessas 3 campanhas é a Taísa. Hoje ele vem da conta CA02 (`doctor_basis`).
+- [ ] Confirmar o médico do conjunto 120236995354460317 (NOVOS SEGUIDORES|DR). Até lá ele fica fora de
+      qualquer custo.
 - [ ] VideoView e LP aparecem em “Fora da captação”, e o gasto delas não entra em nenhum CPL.
 - [ ] A versão efetiva da API foi registrada. Opcional: fixar `META_API_VERSION` nela.
 - [ ] O campo `instagram_profile_follow` é aceito na versão efetiva. Hoje ele só é relevante quando
       houver campanha de seguidores.
-- [ ] A regra de atribuição (`use_unified_attribution_setting=true`) e o `action_report_time` padrão
-      foram conferidos contra o que a UI mostra.
+- [x] `action_report_time=impression` foi fixado (regra da conciliação API x UI) e
+      `use_unified_attribution_setting=true` usa a atribuição de cada conjunto (clique 7 dias).
 - [ ] O imposto foi confirmado com a área fiscal. Enquanto não for, o rótulo continua ESTIMATIVA.
-- [ ] Ao conferir cada campanha, troque `"validation": "pendente"` por
-      `"validation": "conferido DD/MM/AAAA"` no mapa. A UI mostra quantas ainda estão pendentes.
+- [ ] Depois de comparar os resultados com a UI, troque `validation` para `"conferido"` (os valores
+      aceitos são `pendente`, `destino_conferido` e `conferido`). A seção de metodologia mostra a
+      contagem por estado.
 
 ## 3. Aprovação e publicação
 

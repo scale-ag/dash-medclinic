@@ -1,5 +1,5 @@
 // Modelo de dados do dashboard: junta linhas brutas (anúncio/dia) com dimensões e classificação.
-import { classify, CATEGORY } from './classify.js';
+import { classify, CATEGORY, doctorForAdset } from './classify.js';
 import { eachDay } from './dates.js';
 import { addRowInto, emptyTotals, sumRows } from './metrics.js';
 
@@ -49,8 +49,10 @@ export function buildModel(snapshot, map) {
       doctor: c.doctor,
       funnel: c.funnel,
       destination_type: c.destination_type,
+      optimization_goal: adsets[r.adset_id]?.optimization_goal || null,
       reason: c.reason,
       suggestion: c.suggestion || null,
+      doctor_pending: Boolean(c.doctor_pending),
     };
   });
 
@@ -82,12 +84,67 @@ export function viewRows(model, view) {
   return model.rows.filter((r) => r.category === view.category && r.doctor === view.doctor);
 }
 
-/** Existe alguma campanha explicitamente mapeada para este médico/funil? */
+/**
+ * Campanhas explicitamente mapeadas para este médico/funil. Em campanha mista por médico,
+ * conta apenas se algum conjunto estiver atribuído a este médico.
+ */
 export function mappedCampaignsFor(map, view) {
   if (view.kind === 'overview') return [];
   return Object.entries(map.campaigns || {})
-    .filter(([id, e]) => !id.startsWith('$') && e.doctor === view.doctor && e.funnel === view.category)
+    .filter(([id, e]) => {
+      if (id.startsWith('$') || e.funnel !== view.category) return false;
+      if (e.doctor_scope !== 'adset' && e.doctor === view.doctor) return true;
+      return Object.entries(e.adsets || {}).some(([sid, a]) => !sid.startsWith('$') && a?.doctor === view.doctor);
+    })
     .map(([id]) => id);
+}
+
+/**
+ * Campanhas identificadas no mapa para a visão, com status e conjuntos atribuídos ao médico,
+ * e se tiveram veiculação (linhas) no período. Usado para diferenciar "identificada sem veiculação"
+ * de "nenhuma campanha identificada".
+ */
+export function identifiedCampaigns(model, view, range) {
+  const ids = mappedCampaignsFor(model.map, view);
+  const rows = filterRows(viewRows(model, view), { range });
+  return ids.map((id) => {
+    const entry = model.map.campaigns[id];
+    const dim = model.campaigns[id];
+    const adsets = Object.entries(model.adsets)
+      .filter(([, s]) => s.campaign_id === id)
+      .map(([sid, s]) => ({ id: sid, name: s.name, destination_type: s.destination_type, optimization_goal: s.optimization_goal, effective_status: s.effective_status, doctor: doctorForAdset(entry, sid) }));
+    for (const [sid, a] of Object.entries(entry.adsets || {})) {
+      if (!sid.startsWith('$') && !adsets.some((x) => x.id === sid)) {
+        adsets.push({ id: sid, name: a.note, destination_type: null, optimization_goal: null, effective_status: null, doctor: a.doctor ?? null, not_discovered: true });
+      }
+    }
+    const own = rows.filter((r) => r.campaign_id === id);
+    return {
+      id,
+      name: dim?.name || entry.name_observed || id,
+      account_label: model.accounts.find((a) => a.id === entry.account_id)?.label || entry.account_id,
+      effective_status: dim?.effective_status || null,
+      discovered: Boolean(dim),
+      validation: entry.validation || 'pendente',
+      doctor_scope: entry.doctor_scope || 'campaign',
+      adsets: adsets.filter((a) => a.doctor === view.doctor),
+      delivered: own.length > 0,
+      totals: sumRows(own),
+    };
+  });
+}
+
+/** Conjuntos de campanhas mistas por médico (deste funil) que ainda aguardam confirmação de médico. */
+export function pendingDoctorAdsets(model, view) {
+  const out = [];
+  for (const [cid, e] of Object.entries(model.map.campaigns || {})) {
+    if (cid.startsWith('$') || e.funnel !== view.category || e.doctor_scope !== 'adset') continue;
+    for (const [sid, a] of Object.entries(e.adsets || {})) {
+      if (sid.startsWith('$') || a?.doctor !== null) continue;
+      out.push({ campaign_id: cid, campaign_name: model.campaigns[cid]?.name || e.name_observed || cid, adset_id: sid, adset_name: model.adsets[sid]?.name || a.note, note: a.note });
+    }
+  }
+  return out;
 }
 
 export function inRange(date, range) {
@@ -169,6 +226,7 @@ export function buildTree(rows) {
         id: r.adset_id,
         name: r.adset_name,
         destination_type: r.destination_type,
+        optimization_goal: r.optimization_goal,
         category: r.category,
         reason: r.reason,
         totals: emptyTotals(),
@@ -221,6 +279,7 @@ export function reconciliation(model, rowsInRange, range) {
           doctor: r.doctor,
           reason: r.reason,
           suggestion: r.suggestion,
+          doctor_pending: r.doctor_pending,
           totals: emptyTotals(),
         };
         target.set(key, p);

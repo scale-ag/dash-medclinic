@@ -35,8 +35,13 @@ a esse app. Se não pertencer, a coleta falha.
   `spend`, `impressions`, `inline_link_clicks`, `actions`, `instagram_profile_follow`.
 - **Total diário da conta** (`level=account`): coletado para a conciliação.
 - **Descoberta:** campanhas (`objective`, `effective_status`) e conjuntos (`destination_type`,
-  `optimization_goal`, `attribution_spec`). Um conjunto ou campanha que aparece no insights sem ter sido
-  descoberto é buscado por ID, e o coletor confirma que ele pertence à **mesma conta**.
+  `optimization_goal`, `attribution_spec`).
+- **Objetos ausentes da descoberta:** um conjunto ou campanha que aparece no insights da conta, mas não
+  na descoberta, é lido individualmente com `GET /<id>?fields=...,account_id`. Só IDs vistos no insights
+  da própria conta autorizada são lidos, e o coletor confere se `account_id` é o da conta. O parâmetro
+  raiz `?ids=` **não** é usado: a Meta o descontinuou na v26.0+, e a v25 solicitada é atualizada para
+  v27. Se a Meta responder que o objeto não pode ser lido (code 100), os metadados ficam ausentes e o
+  conjunto fica “não conciliado”, fora do custo.
 - **Paginação completa:** o coletor segue `paging.next` até o fim. Cada `next` é validado: precisa ser
   `https://graph.facebook.com`, apontar para o mesmo recurso e não ter `access_token`, que é removido.
   Há limite de páginas e detecção de cursor repetido.
@@ -99,33 +104,62 @@ Para cada conjunto (e, portanto, para cada linha), a categoria é definida assim
 | Mapeado, mas com destino misto (ex.: `MESSAGING_INSTAGRAM_DIRECT_WHATSAPP`), divergente (Messenger, IG Direct, site), desconhecido, ou campanha observada em outra conta | Mapeado, destino não conciliado | não |
 | Campanha fora do mapa | Não classificado | não (a UI mostra só uma *sugestão*, nunca aplicada) |
 
-- **Override por conjunto** (`adset_overrides`): opcional. Exige `accept_destination_type` exato e uma
-  nota de conferência. Se o destino mudar, o override deixa de valer.
+- **Campanha mista por médico:** a campanha leva `"doctor": null` e `"doctor_scope": "adset"`, e o
+  médico de cada conjunto vem de `adsets: { "<adset_id>": { "doctor": "taisa" | null, "note": "…" } }`.
+  A campanha inteira **nunca** é atribuída a um médico. Um conjunto com `doctor: null` (a confirmar) ou
+  ausente do mapa fica “não conciliado”, fora de qualquer custo, e aparece como pendência nas abas.
+- **Conciliação manual de destino por conjunto** (opcional): `adsets["<adset_id>"].accept_destination_type`
+  com o destino exato e uma `note` de conferência. Se o destino mudar, a conciliação deixa de valer.
+- **`validation`** por campanha:
+  - `pendente`: nada conferido.
+  - `destino_conferido`: destino e otimização conferidos via API; resultados ainda a comparar com a UI.
+  - `conferido`: comparado com a UI.
 - **Pausadas com gasto:** são mantidas.
 - **Nada é contado em dobro.** A conciliação da Geral distribui 100% do gasto entre as categorias e
   confere a soma dos anúncios contra o total da conta (`level=account`), com tolerância configurável.
 
-### Mapa inicial (todas as entradas com validação **pendente** na UI da Meta)
+### Mapa atual (versão `2026-11-25-r2`)
 
-| Conta | campaign_id | Observado | Médico | Funil |
-|---|---|---|---|---|
-| CA01 | 120242361567150317 | [WhatsApp][Taísa] | Taísa | whatsapp |
-| CA01 | 120243388359980317 | [WhatsApp][Ailton] | Ailton | whatsapp |
-| CA01 | 120248339618150317 | DTS Ads tricologia | Taísa | whatsapp |
-| CA01 | 120248374076630317 | DAT WPP Top Ads | Ailton | whatsapp |
-| CA01 | 120248471528140317 | DAT WPP Teste de Ads | Ailton | whatsapp |
-| CA01 | 120246982288180317 | VideoView Taísa | Taísa | excluído (VideoView) |
-| CA01 | 120246982670850317 | VideoView Ailton | Ailton | excluído (VideoView) |
-| CA01 | 120248258608230317 | DTS LPV4 | Taísa | excluído (LP) |
-| CA01 | 120248334203780317 | DTS LPV6 | Taísa | excluído (LP) |
-| CA02 | 120251418554480262 | DTS ENGJ ABO Teste de Ads | Taísa | whatsapp |
+| Conta | campaign_id | Observado | Médico | Funil | Validação |
+|---|---|---|---|---|---|
+| CA01 | 120242361567150317 | [WhatsApp][Taísa] | Taísa | whatsapp | destino conferido |
+| CA01 | 120243388359980317 | [WhatsApp][Ailton] | Ailton | whatsapp | destino conferido |
+| CA01 | 120248339618150317 | DTS Ads tricologia | Taísa | whatsapp | destino conferido |
+| CA01 | 120248374076630317 | DAT WPP Top Ads | Ailton | whatsapp | destino conferido |
+| CA01 | 120248471528140317 | DAT WPP Teste de Ads | Ailton | whatsapp | destino conferido |
+| CA01 | 120246982288180317 | VideoView Taísa | Taísa | excluído (VideoView) | pendente |
+| CA01 | 120246982670850317 | VideoView Ailton | Ailton | excluído (VideoView) | pendente |
+| CA01 | 120248258608230317 | DTS LPV4 | Taísa | excluído (LP) | pendente |
+| CA01 | 120248334203780317 | DTS LPV6 | Taísa | excluído (LP) | pendente |
+| CA02 | 120251418554480262 | DTS ENGJ ABO Teste de Ads | Taísa | whatsapp | destino conferido |
+| CA02 | 120251528556640262 | CONVERSATIONS | Taísa¹ | whatsapp | destino conferido |
+| CA02 | 120251521306570262 | LINK_CLICKS² | Taísa¹ | whatsapp | destino conferido |
+| CA02 | 120251418123510262 | CONVERSATIONS | Taísa¹ | whatsapp | destino conferido |
+| CA01 | 120242435400470317 | [Tráfego][Taísa] Seguidores Instagram (histórica, pausada) | Taísa | seguidores | destino conferido |
+| CA01 | 120236975999600317 | ENGAJAMENTO\|NOVOS SEGUIDORES\|DRS (mista por médico) | por conjunto³ | seguidores | pendente |
 
-- As **outras 3 campanhas da CA02** (incluindo as duas “TRAF 25/11”, que têm resultados diferentes na
-  UI) **não estão no mapa**. Elas aparecem em “Pendências de conciliação” com o `destination_type`
-  real de cada conjunto. A classificação delas deve ser decidida pelo destino e adicionada ao mapa.
-- **Seguidores:** nenhuma campanha exclusiva foi confirmada. As duas abas de seguidores mostram
-  “Nenhuma campanha de seguidores identificada”. Seguidores incidentais de campanhas de WhatsApp **não**
-  são usados.
+Notas da tabela:
+
+- **CA01, WhatsApp:** em 25/11/2026 a API confirmou que todos os conjuntos das 5 campanhas têm
+  `destination_type` WHATSAPP, `optimization_goal` CONVERSATIONS e atribuição de clique 7 dias. As 4
+  campanhas da CA02 também têm destino WHATSAPP.
+- **¹ Médico pela conta:** atribuído pela conta CA02 (Dra. Taísa), conforme `doctor_basis` no mapa.
+  Confirmar pelo nome ou criativo na validação local.
+- **² Otimização LINK_CLICKS:** o gasto entra no WhatsApp porque o destino é WHATSAPP. O resultado
+  continua sendo **somente** `messaging_conversation_started_7d`; cliques nunca contam como resultado.
+  Por isso o “Resultado” da UI da Meta (cliques) difere do dashboard.
+- **³ Campanha mista por médico:** o conjunto `120236975999730317` (NOVOS SEGUIDORES|DRA TAÍSA) é da
+  Taísa. O conjunto `120236995354460317` (NOVOS SEGUIDORES|DR) tem médico **a confirmar** e fica fora
+  de qualquer custo.
+
+**Seguidores:** as campanhas de seguidores mapeadas são históricas e pausadas, sem gasto em
+01–24/11. A aba Seguidores Taísa mostra que elas foram **identificadas, mas sem veiculação no período**,
+o que é diferente de não existirem. Seguidores Ailton mostra “Nenhuma campanha de seguidores
+identificada” e o conjunto “DR” como pendente.
+
+Outras campanhas antigas com destino INSTAGRAM_PROFILE e sem médico explícito ficam **não
+classificadas** até a validação. Seguidores orgânicos e incidentais (por exemplo, de campanhas de
+WhatsApp) nunca entram na campanha exclusiva.
 
 ## Métricas
 
@@ -136,7 +170,8 @@ Para cada conjunto (e, portanto, para cada linha), a categoria é definida assim
   seguidores conciliadas.
 - **Atribuição:** `use_unified_attribution_setting=true`, ou seja, a configuração de atribuição de cada
   conjunto, como no Gerenciador de Anúncios. O `attribution_spec` de cada conjunto fica registrado.
-  `action_report_time` usa o padrão da API (configurável em `config/dashboard.json`).
+- **Momento da conversão:** `action_report_time=impression`, regra usada na conciliação API x UI em
+  25/11/2026 e fixada em `config/dashboard.json`.
 - **Alcance e frequência:** não são coletados nem exibidos. Alcance não pode ser somado entre dias ou
   anúncios, e o dashboard não inventa esses números.
 

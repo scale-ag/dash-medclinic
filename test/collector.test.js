@@ -79,6 +79,9 @@ test('backfill completo: linhas anúncio/dia idênticas à fonte, paginação co
   assert.match(ins.searchParams.get('fields'), /instagram_profile_follow/);
   assert.match(ins.searchParams.get('fields'), /inline_link_clicks/);
   assert.ok(JSON.parse(ins.searchParams.get('filtering'))[0].value.includes('PAUSED'));
+  assert.equal(ins.searchParams.get('action_report_time'), 'impression');
+  assert.equal(snapshot.api.action_report_time, 'impression');
+  assert.ok(fake.requests.every((r) => !new URL(r.url).searchParams.has('ids')), 'parâmetro raiz ?ids= nunca é usado');
   // Versão solicitada x efetiva.
   assert.equal(snapshot.api.requested_version, 'v25.0');
   assert.deepEqual(snapshot.api.effective_versions, ['v27.0']);
@@ -195,12 +198,23 @@ test('validações de conta: fuso, moeda e app do token', async () => {
   assert.match(warn.snapshot.accounts.find((a) => a.id === CA01).warnings[0], /business/);
 });
 
-test('conjunto arquivado fora da descoberta é buscado por ID e precisa ser da mesma conta', async () => {
+test('conjunto/campanha fora da descoberta: GET individual /<id>, só IDs do insights da conta, account_id conferido', async () => {
   const src = makeSyntheticSnapshot();
   const hidden = '910000000000000302';
-  const ok = await collect(createFakeMeta(src, { hiddenFromDiscovery: [hidden] }));
-  assert.equal(ok.snapshot.adsets[hidden].destination_type, 'MESSAGING_INSTAGRAM_DIRECT_WHATSAPP');
+  const fake = createFakeMeta(src, { hiddenFromDiscovery: [hidden] });
+  const ok = await collect(fake);
+  assert.equal(ok.snapshot.adsets[hidden].destination_type, src.adsets[hidden].destination_type);
+  const objectReqs = fake.requests.filter((r) => /^\/v\d+\.\d+\/\d+$/.test(r.path));
+  assert.deepEqual(objectReqs.map((r) => r.path.split('/').pop()), [hidden], 'somente o ID ausente da descoberta, visto no insights');
+  assert.match(new URL(objectReqs[0].url).searchParams.get('fields'), /account_id/);
   await assert.rejects(() => collect(createFakeMeta(src, { hiddenFromDiscovery: [hidden], adsetAccountOverride: { [hidden]: CA02 } })), /outra conta/);
+  // Objeto que a Meta não consegue ler: metadados ausentes => não conciliado (fora do custo), sem derrubar a coleta.
+  const gone = createFakeMeta(src, { hiddenFromDiscovery: [hidden] });
+  delete gone.state.adsets[hidden];
+  const res = await collect(gone);
+  assert.equal(res.snapshot.adsets[hidden].destination_type, null);
+  const model = buildModel(res.snapshot, MAP);
+  assert.ok(model.rows.filter((r) => r.adset_id === hidden).every((r) => r.category !== 'whatsapp'));
 });
 
 test('janela grande demais é dividida automaticamente', async () => {

@@ -129,7 +129,9 @@ export function createMetaClient({
       return;
     }
     if (path === 'app') return;
-    if (path === '' && typeof params.ids === 'string' && params.ids.split(',').every((id) => ID_RE.test(id))) return;
+    // Leitura de um único objeto por ID (campanha/conjunto vistos no insights de conta autorizada).
+    // O parâmetro raiz ?ids= NÃO é usado: foi descontinuado na v26.0+.
+    if (ID_RE.test(path) && !('ids' in params)) return;
     throw new MetaApiError(`Caminho não permitido: ${path.slice(0, 60)}`, { kind: 'config' });
   };
 
@@ -259,18 +261,23 @@ export function createMetaClient({
     return items;
   }
 
-  /** Leitura de objetos por ID (?ids=...), em blocos de 50. */
-  async function getByIds(ids, fields) {
-    const out = {};
-    const unique = [...new Set(ids.map(String))];
-    for (let i = 0; i < unique.length; i += 50) {
-      const chunk = unique.slice(i, i + 50);
-      if (!chunk.every((id) => ID_RE.test(id))) throw new MetaApiError('ID inválido em getByIds', { kind: 'config' });
-      const body = await get('', { ids: chunk.join(','), fields });
-      Object.assign(out, body || {});
+  /**
+   * Leitura individual GET /<id>?fields=... (sem o parâmetro raiz ?ids=, descontinuado na v26.0+).
+   * Retorna null se a Meta informar que o objeto não existe/não pode ser lido (code 100);
+   * auth/permissão/transitório continuam falhando. Quem chama DEVE conferir account_id.
+   */
+  async function getObject(id, fields) {
+    if (!ID_RE.test(String(id))) throw new MetaApiError('ID de objeto inválido', { kind: 'config' });
+    try {
+      return await get(String(id), { fields });
+    } catch (e) {
+      if (e instanceof MetaApiError && e.kind === 'invalid_request' && e.code === 100) {
+        logger.warn(`objeto ${String(id).slice(0, 25)} não pôde ser lido (code 100${e.subcode ? `/${e.subcode}` : ''}); metadados ficam ausentes`);
+        return null;
+      }
+      throw e;
     }
-    return out;
   }
 
-  return { get, getAll, getByIds, effectiveVersions, stats, sanitizeNext };
+  return { get, getAll, getObject, effectiveVersions, stats, sanitizeNext };
 }

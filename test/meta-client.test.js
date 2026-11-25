@@ -39,7 +39,26 @@ test('allowlist: outras contas e caminhos arbitrários são bloqueados antes de 
   await assert.rejects(() => c.get('act_999999999/insights'), /fora da allowlist/);
   await assert.rejects(() => c.get('me/adaccounts'), /Caminho não permitido/);
   await assert.rejects(() => c.get(`act_${ACC}/ads`), /Caminho não permitido/);
+  await assert.rejects(() => c.get('', { ids: '120243833203900317', fields: 'id' }), /Caminho não permitido/);
+  await assert.rejects(() => c.get('120243833203900317', { ids: '1', fields: 'id' }), /Caminho não permitido/);
   assert.equal(n, 0);
+});
+
+test('leitura individual GET /<id> (sem ?ids=, descontinuado na v26.0+); objeto inexistente => null', async () => {
+  const urls = [];
+  const c = client(async (url) => {
+    urls.push(url);
+    const u = new URL(url);
+    if (u.pathname.endsWith('/120243833203900317')) return jsonResponse(200, { id: '120243833203900317', account_id: ACC, destination_type: 'INSTAGRAM_PROFILE' });
+    return jsonResponse(400, { error: { message: 'Unsupported get request. Object does not exist', code: 100, error_subcode: 33 } });
+  });
+  assert.deepEqual(await c.getObject('120243833203900317', 'id,account_id,destination_type'), { id: '120243833203900317', account_id: ACC, destination_type: 'INSTAGRAM_PROFILE' });
+  assert.equal(await c.getObject('999999999', 'id'), null);
+  assert.deepEqual(urls.map((x) => new URL(x).pathname), ['/v25.0/120243833203900317', '/v25.0/999999999']);
+  assert.ok(urls.every((x) => !new URL(x).searchParams.has('ids')));
+  await assert.rejects(() => c.getObject('../me', 'id'), /inválido/);
+  const denied = client(async () => jsonResponse(400, { error: { message: 'Permissions error', code: 10 } }));
+  await assert.rejects(() => denied.getObject('120243833203900317', 'id'), (e) => e.kind === 'permission');
 });
 
 test('paginação completa: segue next, remove access_token e valida host/caminho', async () => {

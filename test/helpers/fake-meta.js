@@ -83,13 +83,16 @@ export function createFakeMeta(snapshot, opts = {}) {
     if (injected) return injected;
     const path = url.pathname.replace(/^\/v\d+\.\d+\/?/, '');
     if (path === 'app') return jsonResponse(200, { id: state.appId });
-    if (path === '' && url.searchParams.get('ids')) {
-      const out = {};
-      for (const id of url.searchParams.get('ids').split(',')) {
-        if (state.adsets[id]) out[id] = { id, ...state.adsets[id], account_id: opts.adsetAccountOverride?.[id] || state.adsets[id].account_id };
-        else if (state.campaigns[id]) out[id] = { id, ...state.campaigns[id] };
-      }
-      return jsonResponse(200, out);
+    // Como na Meta real (v26.0+): o parâmetro raiz ?ids= foi descontinuado.
+    if (url.searchParams.has('ids')) {
+      return jsonResponse(500, { error: { message: 'The ids query parameter is deprecated in v26.0+.', code: 100, type: 'OAuthException' } });
+    }
+    // Leitura individual GET /<id>?fields=...
+    if (/^\d{5,25}$/.test(path)) {
+      const id = path;
+      if (state.adsets[id]) return jsonResponse(200, { id, ...state.adsets[id], account_id: opts.adsetAccountOverride?.[id] || state.adsets[id].account_id });
+      if (state.campaigns[id]) return jsonResponse(200, { id, ...state.campaigns[id] });
+      return jsonResponse(400, { error: { message: `Unsupported get request. Object with ID '${id}' does not exist`, code: 100, error_subcode: 33 } });
     }
     const m = /^act_(\d+)(?:\/(\w+))?$/.exec(path);
     if (!m) return jsonResponse(400, { error: { message: 'Unsupported path', code: 100 } });
