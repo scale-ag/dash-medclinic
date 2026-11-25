@@ -87,7 +87,11 @@ export function endOfMonth(s) {
 }
 
 export const PRESETS = [
+  { id: 'today', label: 'Hoje' },
   { id: 'yesterday', label: 'Ontem' },
+  ...[3, 7, 14, 30].map(days => ({ id: 'rolling_' + days, label: days + ' dias' })),
+  { id: 'this_month', label: 'Este mês' },
+  { id: 'all', label: 'Todo período' },
   { id: 'last_7_complete', label: 'Últimos 7 dias completos' },
   { id: 'month_to_yesterday', label: 'Mês até ontem' },
   { id: 'previous_month', label: 'Mês anterior' },
@@ -98,12 +102,25 @@ export const PRESET_IDS = new Set(PRESETS.map((p) => p.id));
 
 /**
  * Intervalo inclusivo para um preset. `today` é a data atual no fuso da conta.
- * Presets nunca incluem hoje (dia parcial). Apenas o personalizado pode incluir hoje,
+ * Os atalhos correntes incluem hoje; os recortes de dias completos terminam ontem,
  * e nesse caso `includesToday` sinaliza que o último dia é parcial.
  */
 export function presetRange(preset, today, custom = {}) {
   assertIsoDate(today, 'hoje');
   switch (preset) {
+    case 'today':
+    case 'rolling_3':
+    case 'rolling_7':
+    case 'rolling_14':
+    case 'rolling_30':
+    case 'this_month':
+    case 'all': {
+      let since = today;
+      if (preset.startsWith('rolling_')) since = addDays(today, 1 - Number(preset.slice(8)));
+      if (preset === 'this_month') since = startOfMonth(today);
+      if (preset === 'all' && isIsoDate(custom.dataStart)) since = minDate(custom.dataStart, today);
+      return { since, until: today, empty: false, includesToday: true };
+    }
     case 'yesterday': {
       const y = addDays(today, -1);
       return { since: y, until: y, empty: false, includesToday: false };
