@@ -118,7 +118,7 @@ Para cada conjunto (e, portanto, para cada linha), a categoria é definida assim
 - **Nada é contado em dobro.** A conciliação da Geral distribui 100% do gasto entre as categorias e
   confere a soma dos anúncios contra o total da conta (`level=account`), com tolerância configurável.
 
-### Mapa atual (versão `2026-11-25-r2`)
+### Mapa atual (versão `2026-11-25-r3`)
 
 | Conta | campaign_id | Observado | Médico | Funil | Validação |
 |---|---|---|---|---|---|
@@ -136,7 +136,7 @@ Para cada conjunto (e, portanto, para cada linha), a categoria é definida assim
 | CA02 | 120251521306570262 | LINK_CLICKS² | Taísa¹ | whatsapp | destino conferido |
 | CA02 | 120251418123510262 | CONVERSATIONS | Taísa¹ | whatsapp | destino conferido |
 | CA01 | 120242435400470317 | [Tráfego][Taísa] Seguidores Instagram (histórica, pausada) | Taísa | seguidores | destino conferido |
-| CA01 | 120236975999600317 | ENGAJAMENTO\|NOVOS SEGUIDORES\|DRS (mista por médico) | por conjunto³ | seguidores | pendente |
+| CA01 | 120236975999600317 | ENGAJAMENTO\|NOVOS SEGUIDORES\|DRS (mista por médico, histórica, pausada) | por conjunto³ | seguidores | destino conferido |
 
 Notas da tabela:
 
@@ -149,13 +149,20 @@ Notas da tabela:
   continua sendo **somente** `messaging_conversation_started_7d`; cliques nunca contam como resultado.
   Por isso o “Resultado” da UI da Meta (cliques) difere do dashboard.
 - **³ Campanha mista por médico:** o conjunto `120236975999730317` (NOVOS SEGUIDORES|DRA TAÍSA) é da
-  Taísa. O conjunto `120236995354460317` (NOVOS SEGUIDORES|DR) tem médico **a confirmar** e fica fora
-  de qualquer custo.
+  Taísa. O conjunto `120236995354460317` (NOVOS SEGUIDORES|DR) foi **confirmado como Dr. Ailton** em
+  25/11/2026: os 2 anúncios do conjunto usam `actor_id` 105833009273235, e o criativo 1636063574404330
+  traz a assinatura “Dr. Ailton Cardoso • Endocrinologia & Performance”. O destino INSTAGRAM_PROFILE
+  também foi validado.
 
-**Seguidores:** as campanhas de seguidores mapeadas são históricas e pausadas, sem gasto em
-01–24/11. A aba Seguidores Taísa mostra que elas foram **identificadas, mas sem veiculação no período**,
-o que é diferente de não existirem. Seguidores Ailton mostra “Nenhuma campanha de seguidores
-identificada” e o conjunto “DR” como pendente.
+**Seguidores:** os dois médicos têm campanha de seguidores **histórica identificada, sem gasto em
+01–24/11**:
+
+- Taísa: `120242435400470317` e o conjunto DRA TAÍSA da campanha mista.
+- Ailton: o conjunto DR da campanha mista.
+
+As duas abas mostram “campanha identificada, sem veiculação no período”, o que é diferente de não
+existir campanha. Um conjunto de campanha mista com `doctor: null` (a confirmar) continua suportado e
+fica fora de qualquer custo.
 
 Outras campanhas antigas com destino INSTAGRAM_PROFILE e sem médico explícito ficam **não
 classificadas** até a validação. Seguidores orgânicos e incidentais (por exemplo, de campanhas de

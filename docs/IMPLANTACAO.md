@@ -65,8 +65,8 @@ Mesmo período, mesma atribuição do conjunto, fuso de São Paulo.
 - [x] As 3 campanhas adicionais da CA02 (120251528556640262, 120251521306570262 e 120251418123510262)
       foram mapeadas como WhatsApp.
 - [ ] Confirmar que o médico dessas 3 campanhas é a Taísa. Hoje ele vem da conta CA02 (`doctor_basis`).
-- [ ] Confirmar o médico do conjunto 120236995354460317 (NOVOS SEGUIDORES|DR). Até lá ele fica fora de
-      qualquer custo.
+- [x] O conjunto 120236995354460317 (NOVOS SEGUIDORES|DR) foi confirmado como Dr. Ailton em 25/11/2026,
+      pelo `actor_id` dos anúncios e pela assinatura do criativo.
 - [ ] VideoView e LP aparecem em “Fora da captação”, e o gasto delas não entra em nenhum CPL.
 - [ ] A versão efetiva da API foi registrada. Opcional: fixar `META_API_VERSION` nela.
 - [ ] O campo `instagram_profile_follow` é aceito na versão efetiva. Hoje ele só é relevante quando
