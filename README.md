@@ -22,6 +22,14 @@ Não há Google, CRM, planilhas de leads, ROAS nem faturamento.
 | WhatsApp Taísa / WhatsApp Ailton | Investimento, conversas iniciadas, custo por conversa, impressões, cliques no link, CTR, CPC e CPM. Gráficos diários de gasto, resultado e custo. Tabela diária. Drill-down campanha → conjunto → anúncio. |
 | Seguidores Ailton / Seguidores Taísa | Mostram somente campanhas (ou conjuntos de campanhas mistas por médico) exclusivas de seguidores. Distinguem “campanha identificada sem veiculação no período” de “nenhuma campanha identificada”. Conjuntos com médico a confirmar não contam para ninguém. |
 
+**Layout (padrão visual dos dashboards da agência Scale):**
+
+- **Menu lateral fixo** com as cinco visões. No celular, ele recolhe e abre por um botão.
+- **Barra superior:** período, “Remover Filtros”, Imposto Meta, tema, última atualização e “Atualizar Dados”.
+- **Filtros secundários:** campanha, conjunto e anúncio, mais a exportação CSV, numa linha compacta abaixo da barra.
+- **Primeira dobra:** à esquerda, coluna de indicadores em formato de funil (investimento, impressões, cliques e resultado). À direita, painel com o gráfico combinado diário e a tabela diária. O gráfico mostra barras de resultado e linhas de investimento e custo, com o eixo de quantidade à esquerda e o de R$ à direita. A tabela tem heatmap por coluna e total fixo.
+- **Abaixo:** comparativo por médico (na Geral), a hierarquia campanha → conjunto → anúncio, e a conciliação e a metodologia em seções recolhidas.
+
 Os filtros (período, campanha, conjunto e anúncio) valem para todas as abas.
 
 - **Presets:** ontem, últimos 7 dias completos, mês até ontem, mês anterior e personalizado.

@@ -17,29 +17,29 @@
   </head>
   <body>
     <a class="skip" href="#main">Pular para o conteúdo</a>
-    <header class="topbar">
-      <div class="container topbar-inner">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">M</span>
-          <div>
-            <div class="brand-name">MedClinic · Bauru/SP</div>
-            <div class="brand-sub">Captação Meta Ads · Dr. Ailton (Endocrinologia e Medicina do Esporte) · Dra. Taísa (Dermatologia/Tricologia)</div>
-          </div>
+    <div class="app">
+      <aside class="sidebar" id="sidebar" aria-label="Navegação">
+        <div class="logo">
+          <div class="logo-main">MedClinic</div>
+          <div class="logo-sub">Dashboard · Bauru/SP</div>
         </div>
-        <div id="status" class="status" aria-label="Status dos dados"></div>
+        <div class="side-sec" id="navTitle">Dashboards</div>
+        <nav id="tabs" class="nav" aria-labelledby="navTitle"></nav>
+        <div class="side-foot">
+          Somente leitura · atualiza ~30 min<br />
+          Fonte: Meta Marketing API<br />
+          <span id="buildFoot"></span>
+        </div>
+      </aside>
+      <div class="scrim" id="scrim"></div>
+      <div class="main-area">
+        <header class="topbar" id="topbar"></header>
+        <div class="subbar" id="filters" role="group" aria-label="Filtros de campanha, conjunto e anúncio (valem para todas as visões)"></div>
+        <div id="banner"></div>
+        <main id="main" class="page-content" tabindex="-1">
+          <p class="loading">Carregando snapshot…</p>
+        </main>
       </div>
-    </header>
-    <div class="container">
-      <div id="banner"></div>
-      <nav id="tabs" class="tabs" aria-label="Visões"></nav>
-      <div id="filters" class="filters" role="group" aria-label="Filtros (valem para todas as visões)"></div>
-      <main id="main" tabindex="-1">
-        <p class="loading">Carregando snapshot…</p>
-      </main>
-      <footer class="footer">
-        Fonte: Meta Marketing API (somente leitura). Resultado de captação = conversas iniciadas no WhatsApp — não são pacientes, agendamentos ou consultas.
-        Datas em DD/MM/AAAA, fuso America/Sao_Paulo, valores em BRL.
-      </footer>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </body>

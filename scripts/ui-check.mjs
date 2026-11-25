@@ -43,7 +43,7 @@ try {
       page.on('pageerror', (e) => problems.push(`${device}/${scheme}: pageerror: ${e.message}`));
       for (const v of views) {
         await page.goto(`${base}#v=${v}&p=month_to_yesterday`, { waitUntil: 'networkidle' });
-        await page.waitForSelector('.view-head h1');
+        await page.waitForSelector('.sec-title');
         await page.waitForTimeout(150);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (overflow > 1) problems.push(`${device}/${scheme}/${v}: overflow horizontal de ${overflow}px`);
@@ -60,18 +60,18 @@ try {
     if (!cond) problems.push(`interação: ${msg}`);
   };
   await page.goto(`${base}#v=whatsapp-taisa`, { waitUntil: 'networkidle' });
-  const campaignSelect = page.locator('.filters label:has-text("Campanha") select');
+  const campaignSelect = page.locator('.subbar label:has-text("Campanha") select');
   const firstCampaign = await campaignSelect.locator('option').nth(1).getAttribute('value');
   await campaignSelect.selectOption(firstCampaign);
   check(page.url().includes(`c=${firstCampaign}`), 'filtro de campanha não foi para a URL');
   await page.getByRole('link', { name: 'WhatsApp Ailton' }).click();
   check(page.url().includes(`c=${firstCampaign}`), 'filtro não é compartilhado entre abas');
-  await page.getByRole('button', { name: 'Limpar filtros' }).click();
+  await page.getByRole('button', { name: 'Remover Filtros' }).click();
   check(!page.url().includes('c='), 'limpar filtros não removeu a campanha');
-  await page.locator('.filters label:has-text("Período") select').selectOption('custom');
+  await page.locator('.topbar .period select').selectOption('custom');
   const today = await page.evaluate(() => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date()));
-  await page.locator('.filters input[type=date]').nth(1).fill(today);
-  await page.locator('.filters input[type=date]').nth(1).dispatchEvent('change');
+  await page.locator('.topbar .period input[type=date]').nth(1).fill(today);
+  await page.locator('.topbar .period input[type=date]').nth(1).dispatchEvent('change');
   check(await page.locator('.range-text .badge', { hasText: 'parcial' }).count() === 1, 'período com hoje não foi marcado como parcial');
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Exportar CSV' }).click()]);
   const csv = await (await import('node:fs/promises')).readFile(await download.path(), 'utf8');
@@ -82,11 +82,11 @@ try {
   check((await page.locator('table.tree tbody tr').count()) > before, 'drill-down não expandiu');
   await page.locator('table.tree thead button', { hasText: 'Impressões' }).click();
   check((await page.locator('table.tree thead th[aria-sort="descending"]').count()) === 1, 'ordenação não aplicada');
-  const heroBefore = await page.locator('.kpi-hero .kpi-value').first().textContent();
-  await page.locator('.switch input').uncheck();
-  const heroAfter = await page.locator('.kpi-hero .kpi-value').first().textContent();
+  const heroBefore = await page.locator('.step.hl-gasto .m-val').first().textContent();
+  await page.getByRole('switch', { name: /Imposto Meta/ }).click();
+  const heroAfter = await page.locator('.step.hl-gasto .m-val').first().textContent();
   check(heroBefore !== heroAfter && page.url().includes('imp=0'), 'toggle de imposto não alterou o investimento');
-  await page.getByRole('button', { name: 'Recarregar dados' }).click();
+  await page.getByRole('button', { name: 'Atualizar Dados' }).click();
   await page.waitForFunction(() => document.getElementById('toast').textContent.includes('Snapshot recarregado'), null, { timeout: 5000 }).catch(() => {});
   check((await page.locator('#toast').textContent()).includes('não dispara coleta'), 'recarregar não explicou que não coleta');
   await page.locator('.chart-svg').first().focus();
@@ -94,6 +94,19 @@ try {
   check(await page.locator('.chart-tip:not([hidden])').count() === 1, 'tooltip por teclado não apareceu');
   await page.screenshot({ path: `${values.out}/interacao-desktop.png`, fullPage: false });
   await ctx.close();
+  // Menu mobile recolhível: abre pelo botão, navega e fecha.
+  const mctx = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/Sao_Paulo', locale: 'pt-BR' });
+  const mp = await mctx.newPage();
+  mp.on('pageerror', (e) => problems.push(`mobile: pageerror: ${e.message}`));
+  await mp.goto(`${base}#v=geral`, { waitUntil: 'networkidle' });
+  check(!(await mp.locator('.sidebar').isVisible()), 'menu mobile deveria iniciar fechado');
+  await mp.getByRole('button', { name: 'Abrir menu' }).click();
+  check(await mp.locator('.sidebar').isVisible(), 'menu mobile não abriu');
+  await mp.waitForTimeout(250);
+  await mp.screenshot({ path: `${values.out}/mobile-menu-aberto.png` });
+  await mp.getByRole('link', { name: 'WhatsApp Ailton' }).click();
+  check(mp.url().includes('v=whatsapp-ailton') && !(await mp.evaluate(() => document.body.classList.contains('nav-open'))), 'menu mobile não navegou/fechou');
+  await mctx.close();
 } finally {
   await browser.close();
   server.kill();
