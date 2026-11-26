@@ -32,7 +32,7 @@ export function fmtCompact(v) {
 export function fmtAxisBRL(v) {
   if (!Number.isFinite(v)) return '';
   if (Math.abs(v) >= 1000) return `R$ ${compact.format(v)}`;
-  return `R$ ${int.format(v)}`;
+  return Number.isInteger(v) ? `R$ ${int.format(v)}` : fmtBRL(v);
 }
 
 export function fmtMinutesAgo(minutes) {
