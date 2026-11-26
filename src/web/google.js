@@ -3,6 +3,7 @@ import {fmtBRL, fmtInt, fmtDec} from './shared/format.js';
 import {formatDateTimeBR} from './shared/dates.js';
 
 const doctors = new Map([
+  ['20706809674','Dr. Ailton'],
   ['22653305722','Dr. Ailton'], ['24453230280','Dra. Taísa'],
   ['24202481670','Dra. Taísa'], ['24465669551','Dra. Taísa'],
 ]);
@@ -43,4 +44,20 @@ export function renderGoogle(main,data,range) {
   main.append(h('section',{class:'card'},h('h2',null,'Ações de conversão'),table(['Ação registrada pelo Google','Conversões'],
     Array.from(actions.values(),group=>[group[0].segments.conversionActionName,fmtDec(totals(group).conversions)]))),
     h('p',{class:'note'},'Conversões correspondem às ações configuradas no Google Ads. A confirmação de atendimento ou consulta depende do acompanhamento da clínica.'));
+}
+
+export function combinedSpend(data,range,metaRows,metaSpend) {
+  if (!data || range.empty || range.since<data.since || range.until>data.until) return null;
+  const googleRows=data.accounts.flatMap(a=>a.daily).filter(r=>r.segments.date>=range.since && r.segments.date<=range.until);
+  const groups=[['ailton','Dr. Ailton'],['taisa','Dra. Taísa'],[null,'Sem classificação']];
+  const body=groups.map(([key,label])=>{
+    const meta=metaSpend(metaRows.filter(r=>key?r.doctor===key:!['ailton','taisa'].includes(r.doctor)).reduce((sum,r)=>sum+r.spend_cents,0));
+    const google=totals(googleRows.filter(r=>(doctors.get(r.campaign.id)||'Sem classificação')===label)).spend;
+    return [label,fmtBRL(meta),fmtBRL(google),fmtBRL(meta+google)];
+  });
+  const meta=metaSpend(metaRows.reduce((sum,r)=>sum+r.spend_cents,0));
+  const google=totals(googleRows).spend;
+  body.push(['Total',fmtBRL(meta),fmtBRL(google),fmtBRL(meta+google)]);
+  return h('section',{class:'card'},h('h2',null,'Investimento por médico e canal'),
+    table(['Médico','Meta Ads','Google Ads','Total'],body));
 }

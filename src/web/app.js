@@ -3,7 +3,7 @@
 // se o snapshot não carregar, a página mostra o erro; se for sintético, mostra uma faixa de alerta.
 // Layout no padrão visual dos dashboards da agência Scale (sidebar, topbar, funil + painel combinado).
 import { h, clear, put } from './dom.js';
-import { renderGoogle } from './google.js';
+import { renderGoogle, combinedSpend } from './google.js';
 import { renderTimeChart, renderComboChart } from './charts.js';
 import { sortableTable } from './tables.js';
 import { hierarchy, adRanking } from './hierarchy.js';
@@ -753,6 +753,7 @@ function renderOverview(main, view, range) {
   coverageNotices(range).forEach((n) => main.append(n));
   const rows = filterRows(app.model.rows, filters(range));
   const rec = reconciliation(app.model, rows, range);
+  if (!entityFilterActive()) put(main,combinedSpend(app.google,range,rows,spendOf));
   const total = sumRows(rows);
   const cat = rec.byCategory;
   const all = deriveMetrics(total, { taxEnabled: state.tax, taxFactor: app.taxFactor });
