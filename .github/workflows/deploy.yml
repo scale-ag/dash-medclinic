@@ -54,7 +54,6 @@ jobs:
     env:
       META_API_VERSION: ${{ vars.META_API_VERSION || 'v25.0' }}
       META_APP_ID: ${{ vars.META_APP_ID }}
-      DATA_START: ${{ vars.DATA_START || '2026-11-01' }}
       FULL_BACKFILL: ${{ github.event_name == 'workflow_dispatch' && inputs.full_backfill && 'true' || 'false' }}
       BASE_SNAPSHOT_URL: https://scale-ag.github.io/dash-medclinic/data/snapshot.json
     steps:
