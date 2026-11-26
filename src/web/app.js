@@ -551,13 +551,23 @@ function validationBadge(v) {
 
 function funnelSteps(view, m) {
   const L = resultLabels(view);
-  return [
-    step({
+  const investment = step({
       label: spendLabel(),
       value: fmtBRL(m.spend),
       tone: 'hl-gasto',
       secs: [state.tax ? ['Bruto Meta', fmtBRL(m.spend_gross)] : ['c/ imposto est.', fmtBRL(m.spend_gross * app.taxFactor)]],
-    }),
+  });
+  if (view.category === 'whatsapp') {
+    return [
+      investment,
+      step({ label: L.result, value: fmtInt(m.results), tone: L.step }),
+      step({ label: 'Custo por conversa iniciada', value: costText(m.cost_per_result, 'não calculável: 0 conversas'), tone: L.step }),
+      step({ label: 'Cliques no link', value: fmtInt(m.link_clicks) }),
+      step({ label: 'CPC (custo por clique)', value: costText(m.cpc, 'não calculável: 0 cliques') }),
+    ];
+  }
+  return [
+    investment,
     step({ label: 'Impressões', value: fmtInt(m.impressions), secs: [['CPM', costText(m.cpm, 'não calculável: 0 impressões')]] }),
     step({ label: 'Cliques no link', value: fmtInt(m.link_clicks), secs: [['CTR', fmtPct(m.ctr)], ['CPC', costText(m.cpc, 'não calculável: 0 cliques')]] }),
     step({
