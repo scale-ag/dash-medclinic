@@ -3,6 +3,7 @@
 // se o snapshot não carregar, a página mostra o erro; se for sintético, mostra uma faixa de alerta.
 // Layout no padrão visual dos dashboards da agência Scale (sidebar, topbar, funil + painel combinado).
 import { h, clear, put } from './dom.js';
+import { renderGoogle } from './google.js';
 import { renderTimeChart, renderComboChart } from './charts.js';
 import { sortableTable } from './tables.js';
 import { hierarchy, adRanking } from './hierarchy.js';
@@ -52,7 +53,7 @@ const $ = (id) => document.getElementById(id);
 function readHash() {
   const p = new URLSearchParams(location.hash.replace(/^#/, ''));
   const v = p.get('v');
-  if (v && VIEWS.some((x) => x.id === v)) state.view = v;
+  if (v && (v === 'google' || VIEWS.some((x) => x.id === v))) state.view = v;
   const preset = p.get('p');
   if (preset && PRESET_IDS.has(preset)) state.preset = preset;
   if (isIsoDate(p.get('de') || '')) state.since = p.get('de');
@@ -136,6 +137,7 @@ async function load({ reload = false } = {}) {
   const previous = app.snapshot?.generated_at || null;
   app.config = config;
   app.snapshot = snapshot;
+  app.google = await fetchJson(`./data/google.json${bust}`).catch(() => null);
   app.model = buildModel(snapshot, config.campaign_map);
   app.taxFactor = taxFactorFromConfig(config.tax);
   app.loadedAt = new Date();
@@ -308,6 +310,8 @@ function renderSidebar() {
     ),
   );
   const b = app.config.build || {};
+  put(nav, h('a', {href:'#v=google', class:'nav-item' + (state.view === 'google' ? ' active' : ''),
+    onClick(e) {e.preventDefault(); state.view='google'; setNav(false); update();}}, 'Google Ads'));
   $('buildFoot').textContent = b.built_at ? `Build ${formatDateTimeBR(b.built_at)}${b.commit ? ` · ${b.commit.slice(0, 7)}` : ''}` : '';
 }
 
@@ -1060,6 +1064,18 @@ function methodologyList() {
 // ---------- Render ----------
 function render() {
   if (!app.snapshot) return;
+  if (state.view === 'google') {
+    const range = currentRange();
+    writeHash();
+    renderSidebar();
+    renderTopbar({label:'Google Ads'}, range);
+    $('topbar').querySelector('.tax-toggle')?.remove();
+    $('topbar').querySelector('.updated')?.remove();
+    clear($('filters'));
+    renderGoogle($('main'),app.google,range);
+    document.title='Google Ads · MedClinic';
+    return;
+  }
   const view = findView(state.view);
   const range = currentRange();
   writeHash();
