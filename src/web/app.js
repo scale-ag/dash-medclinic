@@ -467,8 +467,12 @@ function entityPanels(view, range) {
     const field = key + 'Id';
     const ids = new Set(state[field].split(',').filter(Boolean));
     if (multiple) {
-      if (ids.has(id)) ids.delete(id);
-      else ids.add(id);
+      const chosen = id.split(',');
+      const remove = chosen.every(value => ids.has(value));
+      for (const value of chosen) {
+        if (remove) ids.delete(value);
+        else ids.add(value);
+      }
       state[field] = [...ids].join(',');
     } else {
       state[field] = state[field] === id ? '' : id;
