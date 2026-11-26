@@ -123,7 +123,7 @@ export function createMetaClient({
   const stats = { requests: 0, retries: 0, pages: 0 };
 
   const assertPathAllowed = (path, params = {}) => {
-    const m = /^act_(\d+)(?:\/(insights|campaigns|adsets))?$/.exec(path);
+    const m = /^act_(\d+)(?:\/(insights|campaigns|adsets|ads))?$/.exec(path);
     if (m) {
       if (!allowed.has(m[1])) throw new MetaApiError(`Conta act_${m[1]} fora da allowlist — consulta bloqueada`, { kind: 'config' });
       return;
