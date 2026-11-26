@@ -582,7 +582,7 @@ body.is-loading .page-content {
 .funnel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 .step {
   display: flex;
@@ -595,7 +595,7 @@ body.is-loading .page-content {
   border: 1px solid var(--border);
   border-left: 4px solid var(--accent);
   border-radius: 12px;
-  padding: 11px 14px;
+  padding: 11px 15px;
 }
 .step-main {
   flex: 1 1 0;
@@ -606,7 +606,7 @@ body.is-loading .page-content {
   color: var(--muted);
 }
 .m-val {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -622,7 +622,7 @@ body.is-loading .page-content {
 }
 .secs {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   justify-content: flex-end;
   text-align: right;
   flex-shrink: 0;
