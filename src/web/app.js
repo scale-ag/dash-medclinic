@@ -568,15 +568,10 @@ function funnelSteps(view, m) {
   }
   return [
     investment,
+    step({ label: L.result, value: fmtInt(m.results), sub: L.sub, tone: L.step }),
+    step({ label: 'Custo por seguidor', value: costText(m.cost_per_result, 'não calculável: 0 seguidores'), tone: L.step, title: 'Investimento do período ÷ seguidores atribuídos' }),
     step({ label: 'Impressões', value: fmtInt(m.impressions), secs: [['CPM', costText(m.cpm, 'não calculável: 0 impressões')]] }),
     step({ label: 'Cliques no link', value: fmtInt(m.link_clicks), secs: [['CTR', fmtPct(m.ctr)], ['CPC', costText(m.cpc, 'não calculável: 0 cliques')]] }),
-    step({
-      label: L.result,
-      value: fmtInt(m.results),
-      sub: L.sub,
-      tone: L.step,
-      secs: [[L.cost, costText(m.cost_per_result, `não calculável: 0 ${L.short.toLowerCase()} no período`), `${spendLabel().toLowerCase()} ÷ ${L.short.toLowerCase()}`]],
-    }),
   ];
 }
 
