@@ -1073,7 +1073,7 @@ function render() {
     $('topbar').querySelector('.tax-toggle')?.remove();
     $('topbar').querySelector('.updated')?.remove();
     clear($('filters'));
-    renderGoogle($('main'),app.google,range);
+    renderGoogle($('main'), app.google, range, step);
     document.title='Google Ads · MedClinic';
     return;
   }

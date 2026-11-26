@@ -538,6 +538,9 @@ body.is-loading .page-content {
   display: grid;
   gap: 16px;
 }
+.google-doctors {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
 .funnel-grid {
   grid-template-columns: 340px minmax(0, 1fr);
   align-items: start;
