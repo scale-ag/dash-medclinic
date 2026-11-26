@@ -102,6 +102,7 @@ export function createFakeMeta(snapshot, opts = {}) {
     if (edge === 'campaigns') {
       return page(url, Object.entries(state.campaigns).filter(([, c]) => c.account_id === acc).map(([id, c]) => ({ id, ...c })));
     }
+    if (edge === 'ads') return page(url, Object.entries(snapshot.ads).filter(([, ad]) => ad.account_id === acc).map(([id, ad]) => ({ id, creative: ad.creative })));
     if (edge === 'adsets') {
       return page(
         url,

@@ -182,6 +182,24 @@ export async function collectAccount({ client, account, cfg, range, expected, no
   const adsets = {};
   for (const s of adsetsList) adsets[String(s.id)] = pickAdset(s, id);
 
+  // Os impulsionamentos históricos usam nomes genéricos. Confirme o perfil do
+  // criativo e o destino de cada conjunto, inclusive para anúncios arquivados.
+  const profilesByAd = new Map();
+  if (account.instagram_profiles) {
+    const creatives = await client.getAll(`act_${id}/ads`, {
+      fields: 'id,creative{instagram_user_id,call_to_action_type}',
+      filtering: [{ field: 'ad.effective_status', operator: 'IN', value: cfg.ad_effective_status_filter }],
+      limit: cfg.page_limit,
+    });
+    for (const ad of creatives) {
+      const profile = ad.creative?.instagram_user_id;
+      if (profile) profilesByAd.set(String(ad.id), {
+        instagram_user_id: String(profile),
+        profile_cta: ad.creative.call_to_action_type === 'VIEW_INSTAGRAM_PROFILE',
+      });
+    }
+  }
+
   const windows = splitWindows(range.since, range.until, cfg.window_days);
   const rawRows = [];
   const days = {};
@@ -193,7 +211,7 @@ export async function collectAccount({ client, account, cfg, range, expected, no
     for (const raw of adRaw) {
       const row = normalizeInsightRow(raw, { accountId: id, range: w, cfg });
       rawRows.push(row);
-      ads[row.ad_id] = { account_id: id, campaign_id: row.campaign_id, adset_id: row.adset_id, name: String(raw.ad_name ?? row.ad_id) };
+      ads[row.ad_id] = { account_id: id, campaign_id: row.campaign_id, adset_id: row.adset_id, name: String(raw.ad_name ?? row.ad_id), ...profilesByAd.get(row.ad_id) };
       if (raw.campaign_name) campaignNames.set(row.campaign_id, String(raw.campaign_name));
       if (raw.adset_name) adsetNames.set(row.adset_id, String(raw.adset_name));
     }

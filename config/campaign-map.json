@@ -1,6 +1,6 @@
 {
   "$comment": "Mapa EXPLÍCITO campaign_id -> médico -> funil. A conta e o prefixo do nome (ENGJ/TRAF/DTS/DAT) NÃO determinam a classificação. Campanhas fora deste mapa ficam como 'não classificadas' e não entram em nenhum custo. Funis 'whatsapp' e 'seguidores' são conferidos por conjunto contra destination_type; divergentes ou mistos ficam 'não conciliados' e fora do custo. Campanha MISTA POR MÉDICO: doctor=null + doctor_scope='adset' + adsets{<adset_id>: {doctor, note}}; conjunto com doctor=null (a confirmar) ou ausente do mapa fica fora de qualquer custo. Conciliação manual de destino por conjunto: adsets{<adset_id>: {accept_destination_type, note}}. validation: pendente | destino_conferido (destino/otimização conferidos via API; resultados ainda a comparar com a UI) | conferido (comparado com a UI).",
-  "version": "2026-11-25-r4",
+  "version": "2026-11-25-r5",
   "doctors": {
     "ailton": {
       "label": "Dr. Ailton",
@@ -167,6 +167,516 @@
           "note": "NOVOS SEGUIDORES|DR — CONFIRMADO Dr. Ailton em 25/11/2026: os 2 anúncios do conjunto (sem próxima página) usam actor_id 105833009273235 e o criativo 1636063574404330 traz a assinatura \"Dr. Ailton Cardoso • Endocrinologia & Performance\". Destino INSTAGRAM_PROFILE validado."
         }
       }
+    },
+    "120216272919870317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[Tráfego] [Visitas no perfil] Crescimento instagram",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120216272921200317": {
+          "doctor": null,
+          "note": "Destino do anúncio é o perfil institucional da MedClinic."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120219584389870317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "[Engajamento] [WhatsApp] [CBO] [Dra] Captação de lead",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120219664911490317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120220147080670317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120222061720320317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120222061949470317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120222980592920317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        }
+      }
+    },
+    "120219585823980317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "[Engajamento] [WhatsApp] [CBO] [Dr] Captação de lead",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120220146500510317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120227741303940317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[Engajamento] [Visitas no Perfil] [Conteúdos]",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120227741303970317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        },
+        "120229182462820317": {
+          "doctor": "ailton",
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        },
+        "120229182739330317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120229695061230317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "ENGAJAMENTO [VISITAS AO PERFIL] [CONTEÚDOS]",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120229695062080317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120230291106970317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "Anúncio de Visitas ao perfil do Instagram: Nem sempre a falta de energia está ligada ao...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230291108210317": {
+          "doctor": "ailton",
+          "note": "Destino Instagram e identidade do perfil conferidos na Meta."
+        }
+      }
+    },
+    "120230291187940317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "Anúncio de Visitas ao perfil do Instagram: Já estive do outro lado: como atleta e...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230291188400317": {
+          "doctor": "ailton",
+          "note": "Destino Instagram e identidade do perfil conferidos na Meta."
+        }
+      }
+    },
+    "120230297513840317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "Anúncio de Visitas ao perfil do Instagram: Ninguém segura uma mulher com a autoestima em...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230297513930317": {
+          "doctor": "taisa",
+          "note": "Destino Instagram e identidade do perfil conferidos na Meta.",
+          "accept_destination_type": "UNDEFINED"
+        }
+      }
+    },
+    "120230394760490317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "ENGAJAMENTO | WHATSAPP | AILTON",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230394760760317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120230396591630317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120230548185710317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120230549504540317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120232056936840317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120232471260640317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120233373755150317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120233620209500317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120236284320980317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120237005524950317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120230509977330317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "ENGAJAMENTO | POST | DRA",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230509977350317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        },
+        "120230547559410317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120230510456020317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "[Engajamento] [WhatsApp] [CBO] [Dra] Captação de lead",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230510456740317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120230652237180317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "ENGAJAMENTO | MENSAGEM | DRA TAÍSA",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120230652238450317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120230653826990317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta.",
+          "accept_destination_type": "UNDEFINED"
+        },
+        "120232056336020317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120233373162550317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120233614595310317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        },
+        "120236285082830317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        },
+        "120237003582790317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        }
+      }
+    },
+    "120232465071480317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "Post do Instagram: Melasma ou apenas uma mancha...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232465071780317": {
+          "doctor": "taisa",
+          "note": "Destino Instagram e identidade do perfil conferidos na Meta.",
+          "accept_destination_type": "UNDEFINED"
+        }
+      }
+    },
+    "120232465325970317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "seguidores",
+      "name_observed": "Post do Instagram: A queda capilar é algo natural...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232465326500317": {
+          "doctor": "taisa",
+          "note": "Destino Instagram e identidade do perfil conferidos na Meta.",
+          "accept_destination_type": "UNDEFINED"
+        }
+      }
+    },
+    "120232867467860317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "Post do Instagram: Você sabia que é possível...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232867467980317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120232867909180317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "Post do Instagram: Você já reparou aquelas...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232867909370317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120232868176200317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "Post do Instagram: Cada procedimento é feito com...",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232868176260317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: POST_ENGAGEMENT."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120232901362900317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "ENGAJAMENTO | VISITA | SITE",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120232901363690317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120232905929090317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120232906596200317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120232907677850317": {
+          "doctor": null,
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120236017196360317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "[Engajamento] [WhatsApp] [ABO] [Dra] Captação de lead",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120236017196370317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        }
+      }
+    },
+    "120236022206080317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "Teste Adv | Ailton | Mensagens  Campanha",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120236022206070317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120240006485690317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "ENGAJAMENTO | PERSONALIZADA | WHATSAPP  Campanha",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120240006485700317": {
+          "doctor": null,
+          "note": "O perfil institucional exige confirmação do médico deste conjunto."
+        }
+      }
+    },
+    "120240014456360317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "ENGAJAMENTO | ADV | DR AILTON  Campanha",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120240014456370317": {
+          "doctor": "ailton",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120241649806130317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "whatsapp",
+      "name_observed": "[C1.E] [Engajamento] [WhatsApp] [Dra] Captação de Leads",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120241649806140317": {
+          "doctor": "taisa",
+          "note": "Identidade do criativo ou referência nominal ao médico verificada na Meta."
+        }
+      }
+    },
+    "120245438034770317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[C1.L] [Contact] [LP] [Ailton] Captação de Leads",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120245438034760317": {
+          "doctor": "ailton",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120245912391590317": {
+          "doctor": "ailton",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120246011688630317": {
+          "doctor": "ailton",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120245441495830317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[C1.L] [Contact] [LP] [Taísa] Captação de Leads",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120245441495850317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120245912325760317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        },
+        "120246010532880317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120246032676790317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[C2.L] [Contact] [LP] [Taísa] Captação de Leads",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120246032676820317": {
+          "doctor": "taisa",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
+    },
+    "120246032817290317": {
+      "account_id": "203811442663021",
+      "doctor": null,
+      "doctor_scope": "adset",
+      "funnel": "excluido",
+      "name_observed": "[C2.L] [Contact] [LP] [Ailton] Captação de Leads",
+      "validation": "destino_conferido",
+      "adsets": {
+        "120246032817520317": {
+          "doctor": "ailton",
+          "note": "Otimização do conjunto: OFFSITE_CONVERSIONS."
+        }
+      },
+      "exclusion_reason": "Site, engajamento da publicação ou perfil institucional, conforme o conjunto."
     }
   }
 }

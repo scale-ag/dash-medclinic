@@ -467,8 +467,12 @@ function entityPanels(view, range) {
     const field = key + 'Id';
     const ids = new Set(state[field].split(',').filter(Boolean));
     if (multiple) {
-      if (ids.has(id)) ids.delete(id);
-      else ids.add(id);
+      const chosen = id.split(',');
+      const remove = chosen.every(value => ids.has(value));
+      for (const value of chosen) {
+        if (remove) ids.delete(value);
+        else ids.add(value);
+      }
       state[field] = [...ids].join(',');
     } else {
       state[field] = state[field] === id ? '' : id;
@@ -576,7 +580,8 @@ function renderFunnel(main, view, range) {
     secTitle(`${view.category === 'whatsapp' ? 'Funil WhatsApp' : 'Funil de seguidores'} & evolução diária · ${doctor.label}`),
     h('p', { class: 'view-intro' }, `${doctor.specialty} · ${view.category === 'whatsapp' ? 'Resultado = conversas iniciadas no WhatsApp (não são pacientes, agendamentos nem consultas).' : 'Resultado = seguidores do Instagram vindos de campanhas EXCLUSIVAS de seguidores.'}`),
   );
-  const pendingDoctor = pendingDoctorAdsets(app.model, view);
+  const activeSets = new Set(filterRows(app.model.rows, { range }).map(row => row.adset_id));
+  const pendingDoctor = pendingDoctorAdsets(app.model, view).filter(item => activeSets.has(item.adset_id));
   const pendingDoctorNotice = pendingDoctor.length
     ? notice(
         'warn',

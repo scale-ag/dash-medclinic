@@ -1,8 +1,8 @@
 {
   "$comment": "Configuração de coleta e exibição. Variáveis de ambiente DATA_START, REPROCESS_DAYS, WINDOW_DAYS e META_API_VERSION sobrescrevem os valores abaixo no coletor.",
-  "data_start": "2026-11-01",
+  "data_start": "2025-05-01",
   "reprocess_days": 28,
-  "window_days": 7,
+  "window_days": 28,
   "meta_api_version": "v25.0",
   "insights": {
     "use_unified_attribution_setting": true,

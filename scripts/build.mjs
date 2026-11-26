@@ -4,6 +4,7 @@
 import { cp, mkdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { withProfileCampaigns } from '../src/node/profile-campaigns.js';
 import { loadConfig, ROOT } from '../src/node/config.js';
 import { validateSnapshot, writeJsonAtomic } from '../src/node/snapshot.js';
 
@@ -29,7 +30,7 @@ async function main() {
   await cp(join(ROOT, 'src/shared'), join(out, 'shared'), { recursive: true });
 
   const publicConfig = {
-    campaign_map: campaignMap,
+    campaign_map: withProfileCampaigns(snapshot, campaignMap, accounts.accounts),
     accounts: accounts.accounts.map((a) => ({ id: a.id, label: a.label, description: a.description })),
     tax: dashboard.tax,
     ui: dashboard.ui,

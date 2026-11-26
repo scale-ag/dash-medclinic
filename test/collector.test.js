@@ -69,9 +69,9 @@ test('backfill completo: linhas anúncio/dia idênticas à fonte, paginação co
   assert.ok(fake.requests.every((r) => r.headers.Authorization === `Bearer ${FAKE_TOKEN}` && r.redirect === 'error'));
   assert.ok(logs.every((l) => !l.includes(FAKE_TOKEN)));
   assert.ok(!JSON.stringify(snapshot).includes(FAKE_TOKEN));
-  // Somente as duas contas da allowlist foram consultadas.
+  // Somente as três contas da allowlist foram consultadas.
   const accounts = new Set(fake.requests.map((r) => /act_(\d+)/.exec(r.path)?.[1]).filter(Boolean));
-  assert.deepEqual([...accounts].sort(), [CA02, CA01].sort());
+  assert.deepEqual([...accounts].sort(), [CA02, CA01, '714614090427249'].sort());
   // Parâmetros de insights.
   const ins = new URL(fake.requests.find((r) => r.path.endsWith('/insights') && r.url.includes('level=ad')).url);
   assert.equal(ins.searchParams.get('time_increment'), '1');

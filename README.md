@@ -6,13 +6,12 @@ seguidores, por médico.
 - **Dr. Ailton**: endocrinologia e medicina do esporte.
 - **Dra. Taísa**: dermatologia e tricologia.
 
-> **Status:** implementação completa, com testes automatizados. A **implantação real está PENDENTE**:
-> nenhuma coleta real foi feita a partir deste repositório e nenhum dado real foi publicado.
-> Ainda faltam o secret, as variáveis, a validação contra a UI da Meta e a aprovação de publicação.
-> Os passos estão em [docs/IMPLANTACAO.md](docs/IMPLANTACAO.md).
+Painel público em [MedClinic](https://scale-ag.github.io/dash-medclinic/). A coleta diária por anúncio alimenta as cinco visões. A configuração da atualização automática está em [Implantação](docs/IMPLANTACAO.md).
 
 O resultado de captação é **conversa iniciada no WhatsApp**. Não é paciente, agendamento nem consulta.
 Não há Google, CRM, planilhas de leads, ROAS nem faturamento.
+
+A CA03 contém impulsionamentos identificados pelo perfil do criativo. Cada conjunto precisa apontar para o Instagram do médico e ter destino, otimização ou botão de visita ao perfil. O painel conta os seguidores atribuídos pela Meta. O histórico disponível começa em maio de 2025.
 
 ## Visões
 
@@ -118,7 +117,7 @@ npm run preview
   frontend ou git.
 - As URLs de paginação passam por validação de host e de caminho. Qualquer `access_token` nelas é removido.
   Redirects são proibidos.
-- Só as contas `203811442663021` (CA01) e `1530307658790959` (CA02) são consultadas. Qualquer outra é
+- A coleta consulta CA01 (`203811442663021`), CA02 (`1530307658790959`) e CA03 (`714614090427249`). Qualquer outra é
   bloqueada antes da requisição.
 - A integração faz somente leitura e não precisa de permissão de escrita na Meta.
 - O repositório é **público**, então os logs de Actions também são. Por isso os logs trazem só contagens,
