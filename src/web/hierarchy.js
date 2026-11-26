@@ -42,7 +42,7 @@ function columnsFor(view, singular) {
   if (view.result !== 'conversations') specs.push(['follows','Seguidores',fmtInt], ['cps','CPS',fmtBRL]);
   specs.push(['impressions','Impr.',fmtInt], ['link_clicks','Cliques',fmtInt], ['cpc','CPC',fmtBRL]);
   return [{ key:'name', label:singular, sortValue:r=>r.name, cell:r=>r.name },
-    ...specs.map(([key,label,format])=>({key,label,num:true,sortValue:r=>r[key],cell:r=>
+    ...specs.map(([key,label,format])=>({key,label,num:true,heat:({spend:"gasto",conversations:"conv",follows:"seg"})[key],heatValue:r=>r[key],sortValue:r=>r[key],cell:r=>
       ['cr','convlp'].includes(key) ? h('span',{title:'Métrica de página. A captação desta visão ocorre no WhatsApp.'},'—') : format(r[key])
     }))];
 }
@@ -87,7 +87,9 @@ function trend(items, level, view, range, coveredDates, tax, selected, onSelect)
     return h('button',{type:'button','aria-pressed':String(selected.has(s.key)),onClick:e=>onSelect(s.key,e)},
       swatch,s.label,h('small',null,fmtBRL(s.item[cost])));
   }));
-  queueMicrotask(()=>{if(chart.isConnected) renderTimeChart(chart,{type:'line',series:visible,points,format:fmtBRL,axisFormat:fmtAxisBRL,title,height:150,externalLegend:true,onSeriesClick:onSelect});});
+  if (!points.some(p => p.covered && Object.values(p.values).some(Number.isFinite))) {
+    chart.append(h('p',{class:'chart-empty'},'Sem '+(following?'seguidores':'conversas')+' para calcular o custo neste período.'));
+  } else queueMicrotask(()=>{if(chart.isConnected) renderTimeChart(chart,{type:'line',series:visible,points,format:fmtBRL,axisFormat:fmtAxisBRL,title,height:150,externalLegend:true,onSeriesClick:onSelect});});
   return h('div',{class:'pair-chart'},h('div',{class:'pc-title'},title+' · clique numa linha ou na legenda para filtrar'),chart,legend);
 }
 
@@ -118,8 +120,11 @@ export function adRanking(rows, view, tax, select) {
   const result = following ? 'follows' : 'conversations';
   const unit = following ? 'Seguidores' : 'Conversas';
   const cost = following ? 'cps' : 'cpl';
-  const ads = Array.from(groupRows(rows, 'ad_id'), ([id, group]) => ({
-    id, name: group[0].ad_name, ...summarize(group, tax)
+  // O compilado compara nomenclaturas, mesmo quando o criativo foi duplicado.
+  // As três tabelas de hierarquia continuam agrupadas pelos IDs reais da Meta.
+  const ads = Array.from(groupRows(rows, 'ad_name'), ([name, group]) => ({
+    id: [...new Set(group.map(row => row.ad_id))].sort().join(','),
+    name, ...summarize(group, tax)
   }));
   const leaders = [...ads].filter(a => a[result] > 0).sort((a,b) => b[result]-a[result] || a.name.localeCompare(b.name,'pt-BR')).slice(0,10);
   const bars = leaders.map(a => {
@@ -136,7 +141,8 @@ export function adRanking(rows, view, tax, select) {
   ];
   const table = h('div');
   const draw = sort => {
-    table.replaceChildren(sortableTable({caption:'Compilado dos Anúncios',columns,items:ads,sort,onSort:draw,
+    table.replaceChildren(sortableTable({caption:'Compilado dos Anúncios',columns,
+      items:[...ads].filter(a=>a[cost] != null).sort((a,b)=>a[cost]-b[cost]).slice(0,10),sort,onSort:draw,
       rowAttrs:a=>({title:a.name})}));
   };
   draw({key:cost,dir:'asc'});
