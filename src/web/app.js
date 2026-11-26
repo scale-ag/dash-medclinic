@@ -580,7 +580,8 @@ function renderFunnel(main, view, range) {
     secTitle(`${view.category === 'whatsapp' ? 'Funil WhatsApp' : 'Funil de seguidores'} & evolução diária · ${doctor.label}`),
     h('p', { class: 'view-intro' }, `${doctor.specialty} · ${view.category === 'whatsapp' ? 'Resultado = conversas iniciadas no WhatsApp (não são pacientes, agendamentos nem consultas).' : 'Resultado = seguidores do Instagram vindos de campanhas EXCLUSIVAS de seguidores.'}`),
   );
-  const pendingDoctor = pendingDoctorAdsets(app.model, view);
+  const activeSets = new Set(filterRows(app.model.rows, { range }).map(row => row.adset_id));
+  const pendingDoctor = pendingDoctorAdsets(app.model, view).filter(item => activeSets.has(item.adset_id));
   const pendingDoctorNotice = pendingDoctor.length
     ? notice(
         'warn',
