@@ -120,10 +120,14 @@ test('conciliação manual por conjunto exige o destino exato registrado', () =>
 
 test('visões de seguidores: identificada sem veiculação ≠ inexistente; incidentais do WhatsApp não contam', () => {
   const snap = makeSyntheticSnapshot();
-  const model = buildModel(snap, MAP);
+  const fixtureMap = {
+    ...MAP,
+    campaigns: Object.fromEntries(Object.entries(MAP.campaigns).filter(([id]) => snap.campaigns[id])),
+  };
+  const model = buildModel(snap, fixtureMap);
   const range = { since: '2026-11-01', until: '2026-11-24' };
   const taisa = findView('seguidores-taisa');
-  assert.deepEqual(mappedCampaignsFor(MAP, taisa).sort(), ['120236975999600317', '120242435400470317']);
+  assert.deepEqual(mappedCampaignsFor(fixtureMap, taisa).sort(), ['120236975999600317', '120242435400470317']);
   assert.equal(viewRows(model, taisa).length, 0, 'sem veiculação no período');
   const ident = identifiedCampaigns(model, taisa, range);
   assert.equal(ident.length, 2);
@@ -132,13 +136,13 @@ test('visões de seguidores: identificada sem veiculação ≠ inexistente; inci
   assert.equal(mixed.doctor_scope, 'adset');
   assert.deepEqual(mixed.adsets.map((a) => a.id), ['120236975999730317'], 'apenas o conjunto da Taísa');
   const ailton = findView('seguidores-ailton');
-  assert.deepEqual(mappedCampaignsFor(MAP, ailton), ['120236975999600317'], 'Ailton tem campanha histórica identificada (conjunto “DR”)');
+  assert.deepEqual(mappedCampaignsFor(fixtureMap, ailton), ['120236975999600317'], 'Ailton tem campanha histórica identificada (conjunto “DR”)');
   const identA = identifiedCampaigns(model, ailton, range);
   assert.equal(identA.length, 1);
   assert.equal(identA[0].delivered, false, 'identificada, sem veiculação no período');
   assert.deepEqual(identA[0].adsets.map((a) => a.id), ['120236995354460317'], 'apenas o conjunto do Ailton');
   assert.deepEqual(pendingDoctorAdsets(model, ailton), [], 'nenhum conjunto aguardando médico');
-  const pendingMap = structuredClone(MAP);
+  const pendingMap = structuredClone(fixtureMap);
   pendingMap.campaigns['120236975999600317'].adsets['120236995354460317'].doctor = null;
   const pm = buildModel(snap, pendingMap);
   assert.deepEqual(mappedCampaignsFor(pendingMap, ailton), [], 'médico a confirmar não vira campanha de ninguém');
