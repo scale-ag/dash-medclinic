@@ -380,7 +380,7 @@ function drawCombo(container, { points, bars, lines, countFormat, moneyFormat, c
   g.append(hl);
 
   // Barras empilhadas (2px de separação entre segmentos, topo arredondado).
-  const barW = Math.max(2, Math.min(22, band * 0.6));
+  const barW = Math.max(0.5, band * 0.72);
   points.forEach((p, i) => {
     if (!p.covered) return;
     const x = i * band + (band - barW) / 2;
