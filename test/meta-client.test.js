@@ -38,7 +38,7 @@ test('allowlist: outras contas e caminhos arbitrários são bloqueados antes de 
   });
   await assert.rejects(() => c.get('act_999999999/insights'), /fora da allowlist/);
   await assert.rejects(() => c.get('me/adaccounts'), /Caminho não permitido/);
-  await assert.rejects(() => c.get(`act_${ACC}/ads`), /Caminho não permitido/);
+  await assert.rejects(() => c.get(`act_${ACC}/adcreatives`), /Caminho não permitido/);
   await assert.rejects(() => c.get('', { ids: '120243833203900317', fields: 'id' }), /Caminho não permitido/);
   await assert.rejects(() => c.get('120243833203900317', { ids: '1', fields: 'id' }), /Caminho não permitido/);
   assert.equal(n, 0);
