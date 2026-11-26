@@ -55,6 +55,7 @@ const CAMPAIGNS = [
 export const SYNTHETIC_ACCOUNTS = [
   { id: CA01, label: 'CA01', name: '[SINTÉTICO] CA01' },
   { id: CA02, label: 'CA02', name: '[SINTÉTICO] CA02' },
+  { id: '714614090427249', label: 'CA03', name: '[SINTÉTICO] CA03' },
 ];
 
 /**
