@@ -516,7 +516,7 @@ function dailyTable(caption, columns, items, footer) {
 
 // ---------- Visão de funil (WhatsApp / Seguidores por médico) ----------
 function identifiedSection(list, title) {
-  return [secTitle(title), identifiedTable(list, title)];
+  return disclosure('historico-'+state.view, title, String(list.length)+' campanhas', identifiedTable(list, title));
 }
 
 function identifiedTable(list, title) {
@@ -527,7 +527,7 @@ function identifiedTable(list, title) {
       onSort: () => {},
       items: list,
       columns: [
-        { key: 'name', label: 'Campanha', cell: (c) => h('span', { class: 'cell-name' }, h('span', { class: 'name-text' }, c.name), h('span', { class: 'meta' }, `${c.account_label} · ${c.id}${c.doctor_scope === 'adset' ? ' · mista por médico' : ''}`)) },
+        { key: 'name', label: 'Campanha', cell: (c) => h('span', { class: 'cell-name' }, h('span', { class: 'name-text' }, c.name), h('span', { class: 'meta' }, `${c.account_label} · ${c.id}${c.doctor_scope === 'adset' ? ' · médico identificado por conjunto' : ''}`)) },
         { key: 'status', label: 'Status', cell: (c) => statusText(c) },
         {
           key: 'adsets',
@@ -585,7 +585,7 @@ function renderFunnel(main, view, range) {
   const pendingDoctorNotice = pendingDoctor.length
     ? notice(
         'warn',
-        `${pendingDoctor.length} conjunto(s) de ${view.category === 'seguidores' ? 'seguidores' : 'WhatsApp'} em campanha mista por médico aguardam confirmação do médico e não contam para nenhum médico: `,
+        `${pendingDoctor.length} conjunto(s) de ${view.category === 'seguidores' ? 'seguidores' : 'WhatsApp'} aguardam confirmação do médico no período selecionado: `,
         pendingDoctor.map((p, i) => [i ? '; ' : '', h('strong', null, p.adset_name), ` (${p.adset_id}, campanha ${p.campaign_name})`]),
         '.',
       )
@@ -648,7 +648,7 @@ function renderFunnel(main, view, range) {
         h('h3', null, 'Campanhas identificadas, sem veiculação no período'),
         h('p', null, `${identified.length} campanha(s) de ${view.category === 'seguidores' ? 'seguidores' : 'WhatsApp'} identificada(s) para ${doctor.label}, sem entrega no período selecionado. Não é ausência de campanha: investimento e resultados são zero confirmado nos dias coletados.`),
       ),
-      identifiedTable(identified, 'Campanhas identificadas'),
+      identifiedSection(identified, 'Campanhas identificadas'),
     );
   } else {
     const points = dailySeries(rows, range, { coveredDates: app.model.coveredDates, today: partialDay() });
