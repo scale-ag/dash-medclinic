@@ -84,6 +84,7 @@ jobs:
       - name: Coletar Google Ads das duas contas
         env:
           GOOGLE_ADS_OAUTH: ${{ secrets.GOOGLE_ADS_OAUTH }}
+          GOOGLE_LEADS_SHEET_ID: ${{ secrets.GOOGLE_LEADS_SHEET_ID }}
           GOOGLE_ADS_API_VERSION: v23
         run: node scripts/collect-google.mjs "$(node -p "require('./config/dashboard.json').data_start")" "$(TZ=America/Sao_Paulo date +%F)" dist/data/google.json
       - name: Validar snapshot, conciliação e ausência de credenciais
