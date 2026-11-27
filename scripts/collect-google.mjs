@@ -50,5 +50,45 @@ for (const account of accounts) {
     'SELECT segments.date, campaign.id, segments.conversion_action, segments.conversion_action_name, metrics.conversions' + range);
   snapshot.accounts.push({ ...account, daily, byAction });
 }
+const sheetUrl = new URL('https://docs.google.com/spreadsheets/d/'+encodeURIComponent(process.env.GOOGLE_LEADS_SHEET_ID)+'/gviz/tq');
+sheetUrl.search = new URLSearchParams({ gid:'0', headers:'1', tqx:'out:json', tq:'select D,E,F,J,K' });
+const response = await fetch(sheetUrl, {signal: AbortSignal.timeout(30000)});
+if (!response.ok) throw Error('Planilha de contatos indisponível: HTTP '+response.status);
+const body = await response.text();
+const payload = JSON.parse(body.slice(body.indexOf('{'), body.lastIndexOf('}') + 1));
+const columns = ['Pagina','Utm_source','Utm_medium','Url','dia/horario'];
+if (payload.status !== 'ok' || payload.table?.cols.map(c=>c.label).join('|') !== columns.join('|'))
+  throw Error('Formato inesperado na planilha de contatos.');
+const dayBR = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'});
+const counted = new Set();
+snapshot.sheetLeads = [];
+const counts = new Map();
+for (const row of payload.table.rows) {
+  const [page, source, medium, rawUrl, time] = row.c.map(c=>String(c?.v ?? '').trim());
+  const url = new URL(rawUrl || 'about:blank');
+  const src = (source || url.searchParams.get('utm_source') || '').toLowerCase();
+  const med = (medium || url.searchParams.get('utm_medium') || '').toLowerCase();
+  const clickId = ['gclid','gbraid','wbraid'].some(k=>url.searchParams.get(k));
+  if (!(src === 'google-ads' || src === 'google_ads' || (src === 'google' && /^(cpc|ppc|paidsearch)$/.test(med)) || ((!src || src === 'google') && clickId))) continue;
+  const host = url.hostname.replace(/^www\./,'');
+  let doctor;
+  if (host === 'ailtoncardoso.com.br' || host.endsWith('.ailtoncardoso.com.br')) doctor = 'Dr. Ailton';
+  else if (host === 'taisasantana.com.br' || host.endsWith('.taisasantana.com.br')) doctor = 'Dra. Taísa';
+  else if (['site-ailton-home-v1','lp-acompanhamento-online-v1'].includes(page)) doctor = 'Dr. Ailton';
+  else if (['lp-tricologia-v1','lp-tricologia-v4-black'].includes(page)) doctor = 'Dra. Taísa';
+  else throw Error('Contato pago com página sem médico cadastrado.');
+  if (!time || !Number.isFinite(Date.parse(time))) throw Error('Contato pago sem data válida.');
+  const day = dayBR.format(new Date(time));
+  if (day < since || day > until) continue;
+  const key = [time,doctor,page,rawUrl].join('|');
+  if (counted.has(key)) continue;
+  counted.add(key);
+  const group = day+'|'+doctor;
+  counts.set(group,(counts.get(group) || 0)+1);
+}
+snapshot.sheetLeads = Array.from(counts, ([key,count])=>{
+  const [date,doctor] = key.split('|');
+  return {date,doctor,count};
+});
 await writeFile(output + '.tmp', JSON.stringify(snapshot));
 await rename(output + '.tmp', output);
