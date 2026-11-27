@@ -20,8 +20,8 @@ function table(labels, rows) {
 }
 export function renderGoogle(main, data, range, step) {
   clear(main);
-  if (!data) {
-    main.append(h('p', {class:'notice'}, 'Coleta Google Ads indisponível.'));
+  if (!data || !Array.isArray(data.sheetLeads)) {
+    main.append(h('p', {class:'notice'}, 'Aguardando coleta do Google Ads e da planilha de contatos.'));
     return;
   }
   if (range.empty || range.since < data.since || range.until > data.until) {
@@ -33,7 +33,8 @@ export function renderGoogle(main, data, range, step) {
   const grid = h('div', {class:'grid google-doctors'});
   for (const name of ['Dr. Ailton', 'Dra. Taísa']) {
     const metrics = totals(rows.filter(row => doctors.get(row.campaign.id) === name));
-    const {spend, clicks, conversions} = metrics;
+    const {spend, clicks} = metrics;
+    const conversions = data.sheetLeads.filter(r => r.doctor === name && r.date >= range.since && r.date <= range.until).reduce((n,r) => n+r.count, 0);
     const costPerConversion = fmtBRL(conversions ? spend / conversions : null);
     const cpc = fmtBRL(clicks ? spend / clicks : null);
     grid.append(h('section', {class:'card', 'aria-label':name},
@@ -44,7 +45,7 @@ export function renderGoogle(main, data, range, step) {
           tone:'hl-conv', secs:[['Custo por conversão', costPerConversion]]}),
         step({label:'Cliques', value:fmtInt(clicks), secs:[['CPC', cpc]]}))));
   }
-  main.append(grid, h('p', {class:'note'}, 'Última coleta do Google Ads em '+formatDateTimeBR(data.collectedAt)+'.'));
+  main.append(grid, h('p', {class:'note'}, 'Conversões: contatos registrados na planilha com origem Google Ads. CPA: gasto do médico dividido por esses contatos. Última coleta em '+formatDateTimeBR(data.collectedAt)+'.'));
   if (rows.some(row => !doctors.has(row.campaign.id))) {
     main.append(h('p',{class:'note'},'Há campanhas sem médico identificado fora destes cartões.'));
   }
