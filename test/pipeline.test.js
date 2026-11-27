@@ -140,7 +140,7 @@ test('workflow de deploy: permissões mínimas, ações fixadas por SHA, portão
   const perms = Object.fromEntries(jobs.map((j) => [j.split(':')[0], /permissions:\n((?: {6}.+\n)+)/.exec(j)[1].trim().split(/\n\s*/)]));
   assert.deepEqual(perms, { test: ['contents: read'], 'collect-build': ['contents: read'], deploy: ['pages: write', 'id-token: write'] });
   const secretLines = y.split('\n').filter((l) => l.includes('secrets.'));
-  assert.ok(secretLines.every((l) => /^\s+(META_ACCESS_TOKEN|GOOGLE_ADS_OAUTH): \$\{\{ secrets\.\1 \}\}$/.test(l)));
+  assert.ok(secretLines.every((l) => /^\s+(META_ACCESS_TOKEN|GOOGLE_ADS_OAUTH|GOOGLE_LEADS_SHEET_ID): \$\{\{ secrets\.\1 \}\}$/.test(l)));
   assert.match(y, /name: Coletar Google Ads das duas contas\n        env:\n          GOOGLE_ADS_OAUTH:/);
   const order = ['npm test', 'scripts/collect.mjs', 'scripts/build.mjs', 'scripts/validate-dist.mjs', 'scripts/publish-gate.mjs', 'upload-pages-artifact', 'deploy-pages'];
   const idx = order.map((k) => y.indexOf(k));
